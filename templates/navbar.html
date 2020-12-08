@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Hello Bulma!</title>
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+          <a class="navbar-item" href="http://localhost:5000/">
+            <img class="logo-image" src="{{ url_for('static', filename='img/big-icon.png') }}" alt="jungle icon" />
+            <p class="logo-text pl-4">서비스명</p>
+          </a>
+
+          <a
+            role="button"
+            class="navbar-burger burger"
+            aria-label="menu"
+            aria-expanded="false"
+            data-target="navbarBasicExample"
+          >
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+            <span aria-hidden="true"></span>
+          </a>
+        </div>
+
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item"> 공지사항 </a>
+            <a class="navbar-item"> 자유게시판 </a>
+            <a class="navbar-item"> 익명게시판 </a>
+          </div>
+
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <a class="button is-primary">
+                  <strong>로그아웃</strong>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <section class="section">
+      <div class="container">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </section>
+  </body>
+</html>
+
+<style>
+  .navbar {
+    padding: 24px 0 16px;
+    box-shadow: 0px -5px 6px 6px rgba(0, 0, 0, 0.32);
+  }
+
+  .logo-image {
+    width: 80px;
+  }
+
+  .logo-text {
+    color: green;
+    font-size: 2rem;
+    font-weight: 700;
+  }
+</style>

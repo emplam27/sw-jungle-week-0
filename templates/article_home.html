@@ -1,0 +1,58 @@
+{% extends "navbar.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/home.css') }}" />
+{% endblock %}
+
+{% block content %}
+
+  {% if request.path == '/known'%}
+  <p class="title">
+    실명 게시판
+  </p>
+  <p class="subtitle">
+    자유로운 대화를 나눠보세요! <strong>자유로운 대화를 나눠보세요</strong>!
+  </p>
+  {% else %}
+  <p class="title">
+    익명 게시판
+  </p>
+  <p class="subtitle">
+    익명 대화를 나눠보세요! <strong>익명 대화를 나눠보세요</strong>!
+  </p>
+  {% endif %}
+
+  <div class="article-list">
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">#</th>
+          <th scope="col">제목</th>
+          {% if request.path == '/known'%}
+            <th scope="col">작성자</th>
+          {% endif %}
+          <th scope="col">작성일</th>
+          <th scope="col">조회수</th>
+          <th scope="col">좋아요</th>
+        </tr>
+      </thead>
+      <tbody>
+      {% for article in articles %}
+        <tr>
+          <th scope="row">{{ loop.index }}</th>
+          <td>{{ article.article_title }}</td>
+          {% if request.path == '/known'%}
+            <td>{{ article.article_user_id }}</td>
+          {% endif %}
+          <td>{{ article.article_created_at }}</td>
+          <td>{{ article.article_view }}</td>
+          <td>{{ article.article_like }}</td>
+          <!-- <td>{{article.article_is_secret}}</td> -->
+        </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+
+{% endblock %}

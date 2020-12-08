@@ -1,0 +1,32 @@
+.article-sub {
+}
+
+.comment-form {
+  display: flex;
+}
+
+.comment-textarea {
+  width: 100%;
+}
+
+.comment-button {
+  height: auto;
+}
+
+.comment-list {
+  display: flex;
+  justify-content: space-between;
+}
+
+.comment-user {
+  font-size: 1.2rem;
+  font-weight: 700;
+}
+
+.comment-time {
+  color: gray;
+}
+
+.comment-content {
+  font-weight: 500;
+}
