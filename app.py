@@ -34,7 +34,33 @@ db.users.insert_one({'user_id' : 'test','user_pwd': 'test', 'user_name' : '정�
 def home():
     return render_template('home.html')
 
+# 회원가입
+@app.route('/register', methods=['GET','POST'])
+def register():
+    if request.method == 'GET':
+        return render_template("register.html")
+    else:
+        #회원정보 생성
+        username = request.form.get('username')
+        email = request.form.get('email')
+        ordinal = request.form.get('ordinal')
+        userid = request.form.get('userid')
+        password = request.form.get('password')
+        re_password = request.form.get('re_password')
 
+        userinfo={'user_id':userid, 'user_name':username, 'user_pwd':password, 'user_email':email, 'ordinal':ordinal}
+
+        if not (userid and username and password and re_password) :
+            return "모두 입력해주세요"
+        elif password != re_password:
+            return "비밀번호를 확인해주세요"
+        else: #모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
+            db.users.insert_one(userinfo)
+            return "회원가입 완료"
+        return redirect('/register')
+
+
+# 로그인
 @app.route('/user/login', methods = ['POST'])
 def login():
     user_id = request.form['id_input']
@@ -60,6 +86,14 @@ def login():
     print(access_token)
     print(refresh_token)
     return resp, 200
+
+
+# 목록페이지 보기
+@app.route('/article/known', methods=['GET'])
+def get_article():
+    articles = list(db.articles.find({},{'_id':False}).sort('article_created_at', -1))
+    return jsonify({'result':'success', 'articles': articles})
+
 
 # 실명게시판 글쓰기버튼 작동
 @app.route('/article/known/write')
@@ -134,26 +168,22 @@ def delete_articles(article_id):
 def post_articles():
     article_title = request.form['title_input']
     article_content = request.form['content_input']
-    now = datetime.datetime.dnow()
-    article_created_at = now.strftime('%m-%d %H:%M')  # 시간 : 월-일 시간-분
+    now = datetime.datetime.now()
+    article_created_at = now.today() # 시간
+    article_modified_at = now.today()  # 시간
     article_view = 0
     article_like = 0
     article_is_secret = True
     article_user_id = get_jwt_identity()
 
-    db.articles.insert_one({'article_title': article_title, 'article_content': article_content,
-                         'article_created_at': article_created_at,
-                         'article_view': article_view, 'article_like': article_like,
-                         'article_is_secret': article_is_secret,
-                         'article_user_id': article_user_id})
+    db.articles.insert_one({'article_title' : article_title, 'article_content' : article_content, 'article_created_at' : article_created_at,
+                         'article_modified_at' : article_modified_at,'article_view' : article_view, 'article_like' : article_like, 'article_is_secret' :article_is_secret,
+                         'article_user_id' : article_user_id})
 
+    return redirect('/article/known')
 
     # article_writer = "{}기 {}".format(user['user_ordinal'],user['user_name'])
 
-
-
-@app.route('/article/known', methods=['GET'])
-def get_articles():
 
 
 
