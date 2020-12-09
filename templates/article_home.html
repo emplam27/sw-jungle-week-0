@@ -6,29 +6,39 @@
 
 {% block content %}
 
-  {% if request.path == '/known'%}
-  <p class="title">
-    실명 게시판
-  </p>
-  <p class="subtitle">
-    자유로운 대화를 나눠보세요! <strong>자유로운 대화를 나눠보세요</strong>!
-  </p>
+  {% if request.path == '/article/known'%}
+    <div class="home-title">
+      <div>
+        <p class="title pt-5">
+          실명 게시판
+        </p>
+        <p class="subtitle pt-2">
+          자유로운 대화를 나눠보세요! <strong>자유로운 대화를 나눠보세요</strong>!
+        </p>
+      </div>
+      <button class="button is-primary is-medium">글 작성</button>
+    </div>
   {% else %}
-  <p class="title">
-    익명 게시판
-  </p>
-  <p class="subtitle">
-    익명 대화를 나눠보세요! <strong>익명 대화를 나눠보세요</strong>!
-  </p>
+    <div class="home-title">
+      <div>
+        <p class="title pt-5">
+          익명 게시판
+        </p>
+        <p class="subtitle pt-2">
+          익명 대화를 나눠보세요! <strong>익명 대화를 나눠보세요</strong>!
+        </p>
+      </div>
+      <button class="button is-primary is-medium">글 작성</button>
+    </div>
   {% endif %}
 
-  <div class="article-list">
+  <div class="article-list pt-6">
     <table class="table">
       <thead>
         <tr>
           <th scope="col">#</th>
           <th scope="col">제목</th>
-          {% if request.path == '/known'%}
+          {% if request.path == '/article/known'%}
             <th scope="col">작성자</th>
           {% endif %}
           <th scope="col">작성일</th>
@@ -40,14 +50,14 @@
       {% for article in articles %}
         <tr>
           <th scope="row">{{ loop.index }}</th>
-          <td>{{ article.article_title }}</td>
-          {% if request.path == '/known'%}
-            <td>{{ article.article_user_id }}</td>
-          {% endif %}
-          <td>{{ article.article_created_at }}</td>
-          <td>{{ article.article_view }}</td>
-          <td>{{ article.article_like }}</td>
-          <!-- <td>{{article.article_is_secret}}</td> -->
+            <td><a href="">{{ article.article_title }}</a></td>
+            {% if request.path == '/article/known'%}
+              <td>{{ article.user_id }}</td>
+            {% endif %}
+            <td>{{ article.article_created_at }}</td>
+            <td>{{ article.article_view }}</td>
+            <td>{{ article.article_like }}</td>
+            <!-- <td>{{article.article_is_secret}}</td> -->
         </tr>
       {% endfor %}
       </tbody>

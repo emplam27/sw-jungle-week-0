@@ -17,24 +17,24 @@
         </div>
 
         <div class="login-form-container column">
-          <form id="register-form">
+          <form id="register-form" action="/user/login" method="POST">
             <div class="field">
               <label class="label">아이디</label>
               <div class="control">
-                <input class="input" type="text" placeholder="아이디를 입력해주세요." />
+                <input class="input" name="user_id" type="text" placeholder="아이디를 입력해주세요." />
               </div>
             </div>
 
             <div class="field">
               <label class="label">비밀번호</label>
               <div class="control">
-                <input class="input" type="text" placeholder="비밀번호를 입력해주세요." />
+                <input class="input" name="user_pwd" type="text" placeholder="비밀번호를 입력해주세요." />
               </div>
             </div>
 
             <br />
             <div class="field">
-              <button class="button is-link is-fullwidth">로그인</button>
+              <button class="button is-link is-fullwidth" type="submit">로그인</button>
             </div>
           </form>
         </div>
