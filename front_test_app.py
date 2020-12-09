@@ -140,10 +140,10 @@ def known_post_articles():
 
 
 # 게시판(익명 + 실명) 상세페이지 (GET ? POST ?)
-@app.route('/article/<article_id>', methods=['GET'])
-def read_articles(article_id):
+@app.route('/article/<article_key>', methods=['GET'])
+def read_articles(article_key):
     # 조회 후 조회수 1 증가, 증가된 후의 값 return
-    article = db.articles.find_one_and_update({'_id': article_id},
+    article = db.articles.find_one_and_update({'_id': article_key},
                                               {"$inc" : {"article_view" : 1}},return_document=True)
     user_id = get_jwt_identity()
 
@@ -152,21 +152,21 @@ def read_articles(article_id):
 
 
 # 수정 버튼을 누르면
-@app.route('/article/<article_id>/modify', methods=['PUT'])
-def modify_articles(article_id):
-    article = db.articles.find_one({'_id': article_id})
+@app.route('/article/<article_key>/modify', methods=['PUT'])
+def modify_articles(article_key):
+    article = db.articles.find_one({'_id': article_key})
     return render_template('modify.html', article=article)
 
 
 # 수정완료 버튼을 누르면
-@app.route('/article/<article_id>/modify_pro')
-def modify_pro(article_id):
+@app.route('/article/<article_key>/modify_pro')
+def modify_pro(article_key):
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
     article_modified_at = now.today()
 
-    db.articles.update_one({'_id': article_id}, {'$set': {'article_title': article_title,
+    db.articles.update_one({'_id': article_key}, {'$set': {'article_title': article_title,
                                                           'article_content': article_content,
                                                           'article_modified_at': article_modified_at}})
 
@@ -174,9 +174,9 @@ def modify_pro(article_id):
 
 
 # 삭제
-@app.route('/article/<article_id>/delete', methods=['DELETE'])
-def delete_articles(article_id):
-    db.articles.delete_one({'_id': article_id})
+@app.route('/article/<article_key>/delete', methods=['DELETE'])
+def delete_articles(article_key):
+    db.articles.delete_one({'_id': article_key})
     return redirect('/article/known')
 
 
