@@ -6,51 +6,58 @@
 
 
 {% block content %}
-  <p id="article-id" style="display: none;">{{ article._id }}</p>
-  <p class="title">
-    {{ article.article_title }}
-  </p>
-  {% if not article.article_is_secret %}
-    <p>작성자: {{ article.user_id }}</p>
-  {% endif %}
-  <p>작성시간: {{ article.article_created_at }}</p>
-  <p>조회수: {{ article.article_view }}</p>
+  <div class="article-title-box">
+    <div>
+      <p id="article-id" style="display: none;">{{ article._id }}</p>
+      <p class="title">
+        {{ article.article_title }}
+      </p>
+      {% if not article.article_is_secret %}
+        <span class="subtitle mr-3"><strong>{{ article.user_id }}</strong></span>
+        <span class="subtitle mr-3">|</span>
+      {% endif %}
+      <span class="subtitle mr-3">{{ article.article_created_at }}</span>
+      <span class="subtitle mr-3">|</span>
+      <span class="subtitle mr-1"><i class="fas fa-eye"></i></span>
+      <span class="subtitle">{{ article.article_view }}</span>
+    </div>
+    {% if user_id == article.user_id %}
+      <div>
+        <form action="/article/{{ article._id }}/modify" method="GET">
+          <button class="button is-success is-light" type="submit">게시글 수정</button>
+        </form>
+        <form action="/article/{{ article._id }}/delete" method="POST">
+          <button class="button is-danger is-light" type="submit">게시글 삭제</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
   <hr>
-  <p>{{ article.article_content }}</p>
+  <p class="article-content">{{ article.article_content }}</p>
+  <br/>
   
-  <div class="mt-5">
+  <div class="mt-5 like-button-box">
     {% if is_like %}
       <p id="is-like" style="display: none;">true</p>
-      <div class="pt-3">
-        <div id="like-button" class="like-button-full p-3">
-          <span id="heart-icon" class="mr-2 ml-2"><i class="far fa-heart fa-lg mr-3"></i></span>
-          <span id="like-count" class="mr-2">{{ article.article_like }}</span>
+      <div class="pt-5">
+        <div id="like-button" class="like-button-full p-4">
+          <span id="heart-icon" class="mr-3 ml-4"><i class="far fa-heart fa-lg mr-3"></i></span>
+          <span id="like-count" class="mr-4">{{ article.article_like }}</span>
         </div>
       </div>
     {% else %}
       <p id="is-like" style="display: none;">false</p>
-      <div class="pt-3">
-        <div id="like-button" class="like-button-outlined p-3">
-          <span id="heart-icon" class="mr-2 ml-2"><i class="far fa-heart fa-lg mr-3"></i></span>
-          <span id="like-count" class="mr-2">{{ article.article_like }}</span>
+      <div class="pt-5">
+        <div id="like-button" class="like-button-outlined p-4">
+          <span id="heart-icon" class="mr-3 ml-4"><i class="far fa-heart fa-lg mr-3"></i></span>
+          <span id="like-count" class="mr-4">{{ article.article_like }}</span>
         </div>
       </div>
     {% endif %}
   </div>
 
-  {% if user_id == article.user_id %}
-    <div class="mt-5">
-      <form action="/article/{{ article._id }}/modify" method="GET">
-        <button class="button is-success is-light" type="submit">게시글 수정</button>
-      </form>
-      <form action="/article/{{ article._id }}/delete" method="POST">
-        <button class="button is-danger is-light" type="submit">게시글 삭제</button>
-      </form>
-    </div>
-  {% endif %}
-
   <div>
-    <form action="/article/{{ article._id }}/comment" method="POST" class="comment-form mt-5">
+    <form class="comment-form mt-6" action="/article/{{ article._id }}/comment" method="POST">
       <div class="comment-textarea">
         <textarea class="textarea" name="comment_content" placeholder="댓글을 작성해주세요." rows="2"></textarea>
       </div>
@@ -61,9 +68,9 @@
     {% for comment in comments %}
     <div id="comment-{{ comment._id }}" class="comment-list">
       <div>
-        <span class="comment-user">{{ comment.user_id }}</span>
-        <span> / </span>
-        <span class="comment-time">{{ comment.comment_modified_at }}</span>
+        <span class="comment-user mr-2">{{ comment.user_id }}</span>
+        <span class="comment-time"> | </span>
+        <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
         <div class="comment-content pt-2">{{ comment.comment_content }}</div>
       </div>
       {% if user_id == comment.user_id %}
@@ -102,12 +109,12 @@
       isLike = 'true'
       likeCountNumber += 1
       likeCount.innerText = likeCountNumber
-      likeButton.className = 'like-button-full p-3'
+      likeButton.className = 'like-button-full p-4'
     } else {
       isLike = 'false'
       likeCountNumber -= 1
       likeCount.innerText = likeCountNumber
-      likeButton.className = 'like-button-outlined p-3'
+      likeButton.className = 'like-button-outlined p-4'
     }
   }
 
@@ -118,9 +125,9 @@
     console.log(commentElement)
     commentElement.innerHTML = `
       <div class="comment-modify">
-        <span class="comment-user">${UserId}</span>
-        <span> / </span>
-        <span class="comment-time">${commentModifiedAt}</span>
+        <span class="comment-user mr-2">${UserId}</span>
+        <span class="comment-time"> | </span>
+        <span class="comment-time ml-2">${commentModifiedAt}</span>
         <div class="comment-modify-form mt-3">
           <form class="comment-modify-form" action="/comment/${commentId}/modify" method="POST">
             <div class="comment-modify-textarea">
