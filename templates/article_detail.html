@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
 {% endblock %}
 
+
 {% block content %}
   <p class="title">
     {{ article.article_title }}
@@ -15,10 +16,14 @@
   <p>조회수: {{ article.article_view }}</p>
   <hr>
   <p>{{ article.article_content }}</p>
-  <p>좋아요: {{ article.article_like }}</p>
-
+  
   <div>
-    <i class="fas fa-heart"></i>
+    <button class="button is-danger is-outlined is-medium">
+      <div class="p-3">
+        <i class="far fa-heart fa-lg mr-3"></i>
+        {{ article.article_like }}
+      </div>
+    </button>    
   </div>
 
   {% if user_id == article.user_id %}
@@ -61,5 +66,11 @@
     <hr>
     {% endfor %}
   </div>
+{% endblock %}
 
+
+{% block script %}
+<script>
+  const 
+</script>
 {% endblock %}
