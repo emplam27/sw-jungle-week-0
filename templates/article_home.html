@@ -10,25 +10,25 @@
     <div class="home-title">
       <div>
         <p class="title pt-5">
-          실명 게시판
+          자유게시판
         </p>
         <p class="subtitle pt-2">
           자유로운 대화를 나눠보세요! <strong>자유로운 대화를 나눠보세요</strong>!
         </p>
       </div>
-      <button class="button is-primary is-medium">글 작성</button>
+      <button class="button is-primary is-medium" onclick="location.href='/article/known/post'">실명글 작성</button>
     </div>
   {% else %}
     <div class="home-title">
       <div>
         <p class="title pt-5">
-          익명 게시판
+          익명게시판
         </p>
         <p class="subtitle pt-2">
           익명 대화를 나눠보세요! <strong>익명 대화를 나눠보세요</strong>!
         </p>
       </div>
-      <button class="button is-primary is-medium">글 작성</button>
+      <button class="button is-primary is-medium" onclick="location.href='/article/unknown/post'">익명글 작성</button>
     </div>
   {% endif %}
 
@@ -47,19 +47,28 @@
         </tr>
       </thead>
       <tbody>
-      {% for article in articles %}
-        <tr>
-          <th scope="row">{{ loop.index }}</th>
-            <td><a href="">{{ article.article_title }}</a></td>
-            {% if request.path == '/article/known'%}
+        {% if (request.path == '/article/known') %}
+          {% for article in articles %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td><a href="/article/{{ article._id }}">{{ article.article_title }}</a></td>
               <td>{{ article.user_id }}</td>
-            {% endif %}
-            <td>{{ article.article_created_at }}</td>
-            <td>{{ article.article_view }}</td>
-            <td>{{ article.article_like }}</td>
-            <!-- <td>{{article.article_is_secret}}</td> -->
-        </tr>
-      {% endfor %}
+              <td>{{ article.article_created_at }}</td>
+              <td>{{ article.article_view }}</td>
+              <td>{{ article.article_like }}</td>
+            </tr>
+          {% endfor %}
+        {% else %}
+          {% for article in articles %}
+            <tr>
+              <th scope="row">{{ loop.index }}</th>
+              <td><a href="/article/{{ article._id }}">{{ article.article_title }}</a></td>
+              <td>{{ article.article_created_at }}</td>
+              <td>{{ article.article_view }}</td>
+              <td>{{ article.article_like }}</td>
+            </tr>
+          {% endfor %}
+        {% endif %}
       </tbody>
     </table>
   </div>

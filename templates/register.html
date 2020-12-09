@@ -12,6 +12,7 @@
     <div class="register-form-container">
 
       <form id="register-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <p class="title">교육생 검증 정보</p>
         <p class="subtitle">SW사관학교 정글 교육생을 확인합니다.</p>
         <div class="field">
