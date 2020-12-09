@@ -1,7 +1,8 @@
-from flask import Flask, render_template, request, jsonify, redirect
+from flask import Flask, render_template, request, jsonify, redirect,make_response
 from flask_jwt_extended import *
 from pymongo import MongoClient
 import datetime
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -24,13 +25,20 @@ app.config['JWT_COOKIE_CSRF_PROTECT'] = True
 client = MongoClient('localhost', 27017)
 db = client.dbname
 
-# test - id
-db.users.insert_one({'user_id': 'test', 'user_pwd': 'test', 'user_name': '정글', 'user_email': '.com', 'user_ordinal': 1})
-
+# test - id 임시삽입
+# db.users.insert_one({'user_id': 'test', 'user_pwd': 'test', 'user_name': '정글', 'user_email': '.com', 'user_ordinal': 1})
+# db.articles.insert_one({'user_id' : 'test','article_title' : 'test_title','article_content' : 'test_content',
+#                         'article_created_at' : datetime.datetime.now().today(), 'article_view' : 0,
+#                         'article_like' :0, 'article_is_secret' : True})
+# db.students.insert_one({'stu_name' : 'ㅂㅈㄷ', 'stu_email' : '@.com', 'stu_ordinal' : 1})
+# db.comments.insert_one({'article_key' : 123, 'user_id' : 'test', 'comment_content' : 'test_comment',
+#                         'comment_created_at' : datetime.datetime.now().today()})
+# db.likes.insert_one({'user_id' : 'test' , 'article_key' : 123})
+#
 
 @app.route('/')
 def home():
-    return render_template('home.html')
+    return render_template('login.html')
 
 
 # 회원가입
@@ -50,14 +58,17 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
-                    'ordinal': ordinal}
+        user = db.users.find_one({'user_name': username, 'user_email' : email})
 
-        if not (userid and username and password and re_password):
-            return "모두 입력해주세요"
+        if user is None:
+            return jsonify({'result' : 'fail' , 'msg' : 'student error'})
+        elif not (userid and username and password and re_password):
+            return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
         elif password != re_password:
-            return "비밀번호를 확인해주세요"
+            return jsonify({'result' : 'fail','msg' : "pw error"})
         else:  # 모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
+            userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
+                        'ordinal': ordinal}
             db.users.insert_one(userinfo)
             return jsonify({'result' : "success"})
 
@@ -65,20 +76,19 @@ def register():
 # 로그인
 @app.route('/user/login', methods=['POST'])
 def login():
-    user_id = request.form['id_input']
-    user_pw = request.form['pw_input']
-    print(user_id)
-    print(user_pw)
+    user_id = request.form['user_id']
+    user_pwd = request.form['user_pwd']
+
 
     ## *** find_one 시에 아무것도 없을 때의 데이터 형태 알아야함 ***
-    user = db.articles.find_one({'user_id': user_id}, {'user_pwd': user_pw})
+    user = db.users.find_one({'user_id': user_id}, {'user_pwd': user_pwd})
     if user is None:
         return jsonify({'login': False})
 
     access_token = create_access_token(identity=user_id, expires_delta=False)
     refresh_token = create_refresh_token(identity=user_id)
 
-    resp = jsonify({'login': True})
+    resp = make_response(redirect('/article/known'))
 
     # 서버에 저장
     set_access_cookies(resp, access_token)
@@ -86,15 +96,21 @@ def login():
 
     print(access_token)
     print(refresh_token)
-    return resp, 200
+
+    return resp
 
 
 # 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
-def get_article():
-    articles = list(db.articles.find({}, {'_id': False}).sort('article_created_at', -1))
-    return jsonify({'result': 'success', 'articles': articles})
+def get_known_article():
+    articles = list(db.articles.find({}).sort('article_created_at', -1))
+    return render_template('article_home.html', articles=articles)
 
+
+@app.route('/article/unknown', methods=['GET'])
+def get_unknown_article():
+    articles = list(db.articles.find({}))
+    return render_template('article_home.html', articles=articles)
 
 # 실명게시판 글쓰기버튼 작동
 @app.route('/article/known/write')
@@ -132,29 +148,54 @@ def known_post_articles():
 
 # 게시판(익명 + 실명) 상세페이지 (GET ? POST ?)
 @app.route('/article/<article_id>', methods=['GET'])
+@jwt_required
 def read_articles(article_id):
-    article = db.articles.find_one({'_id': article_id})
+    # 조회 후 조회수 1 증가, 증가된 후의 값 return
+    article = db.articles.find_one_and_update({'_id': ObjectId(article_id)},
+                                              {"$inc" : {"article_view" : 1}},return_document=True)
     user_id = get_jwt_identity()
 
+
     return render_template('read.html', article=article, user_id=user_id)
+
+# 게시판 좋아요 기능 ## 주소
+@app.route('/article/<article_id>/like')
+@jwt_required
+def like_articles(article_id):
+    article = db.articles.find_one({'_id': ObjectId(article_id)})
+    user_id = get_jwt_identity()
+
+    like_info = {'user_id' : user_id,'article_key' : article['_id']}
+    is_like = db.likes.find_one(like_info)
+    if is_like is None:
+        db.likes.insert_one(like_info)
+        db.articles.update_one({'_id' : ObjectId(article_id)},{'$inc' : {'article_like' : 1}})
+        return jsonify({"result": "like"})
+    else :
+        db.likes.delete_one(like_info)
+        db.articles.update_one({'_id': ObjectId(article_id)}, {'$inc': {'article_like': -1}})
+        return jsonify({"result" : "non-like"})
 
 
 # 수정 버튼을 누르면
 @app.route('/article/<article_id>/modify', methods=['PUT'])
+@jwt_required
 def modify_articles(article_id):
-    article = db.articles.find_one({'_id': article_id})
+    article = db.articles.find_one({'_id': ObjectId(article_id)})
     return render_template('modify.html', article=article)
 
 
 # 수정완료 버튼을 누르면
 @app.route('/article/<article_id>/modify_pro')
+@jwt_required
 def modify_pro(article_id):
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
     article_modified_at = now.today()
+    # 조회수, 좋아요는 수정하지 않는다.
 
-    db.articles.update_one({'_id': article_id}, {'$set': {'article_title': article_title,
+    db.articles.update_one({'_id': ObjectId(article_id)}, {'$set': {'article_title': article_title,
                                                           'article_content': article_content,
                                                           'article_modified_at': article_modified_at}})
 
@@ -163,8 +204,9 @@ def modify_pro(article_id):
 
 # 삭제
 @app.route('/article/<article_id>/delete', methods=['DELETE'])
+@jwt_required
 def delete_articles(article_id):
-    db.articles.delete_one({'_id': article_id})
+    db.articles.delete_one({'_id': ObjectId(article_id)})
     return redirect('/article/known')
 
 
@@ -189,6 +231,8 @@ def unknown_post_articles():
 
     return redirect('/article/unknown')
 
+
+# 댓글
 
 
 if __name__ == '__main__':
