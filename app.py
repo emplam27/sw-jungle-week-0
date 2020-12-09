@@ -21,6 +21,17 @@ app.config['JWT_REFRESH_COOKIE_PATH'] = '/'  # refresh cookie를 보관할 url (
 # (이 경우엔 프론트에서 접근해야하기 때문에 httponly가 아님)
 app.config['JWT_COOKIE_CSRF_PROTECT'] = True
 
+# 로그아웃 Blacklist 관련 토큰체크 설정
+# 위에 써서 필요한가?(10번째 줄) app.config['JWT_SECRET_KEY'] = 'jungle-gym'  # Change this!
+# app.config['JWT_BLACKLIST_ENABLED'] = True
+# app.config['JWT_BLACKLIST_TOKEN_CHECKS'] = ['access', 'refresh']
+# blacklist = set()
+
+# @jwt.token_in_blacklist_loader
+# def check_if_token_in_blacklist(decrypted_token):
+#     jti = decrypted_token['jti']
+#     return jti in blacklist
+
 # Mongo DB
 client = MongoClient('localhost', 27017)
 db = client.dbname
@@ -100,10 +111,8 @@ def check_id():
 # 로그인
 @app.route('/user/login', methods=['POST'])
 def login():
-
-
-    user_id = request.form['user_id']
     user_pwd = request.form['user_pwd']
+    user_id = request.form['user_id']
 
 
     ## *** find_one 시에 아무것도 없을 때의 데이터 형태 알아야함 ***
@@ -120,10 +129,24 @@ def login():
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
 
-    print(access_token)
-    print(refresh_token)
+
 
     return resp
+
+# Endpoint for revoking the current users access token
+# @app.route('/logout', methods=['DELETE'])
+# @jwt_required
+# def logout():
+#     jti = get_raw_jwt()['jti']
+#     blacklist.add(jti)
+#     # return jsonify({"msg": "Successfully logged out"}), 200
+#     return redirect('/')
+
+@app.route('/token/remove', methods=['POST'])
+def logout():
+    resp = make_response(redirect('/'))
+    unset_jwt_cookies(jsonify({'logout': 'success'}))
+    return resp, 200
 
 
 # 목록페이지 보기

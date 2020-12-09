@@ -149,9 +149,39 @@ def get_unknown_article():
 @jwt_required
 @csrf.exempt
 def known_post_articles():
+<<<<<<< HEAD
     if check() is True:
         return redirect('/')
 
+=======
+<<<<<<< HEAD
+    article_title = request.form['title_input']
+    article_content = request.form['content_input']
+    now = datetime.datetime.now()
+    article_created_at = now.today()  # 시간
+    article_modified_at = now.today()  # 시간
+    article_view = 0
+    article_like = 0
+    article_is_secret = False
+    article_user_id = get_jwt_identity()
+
+    db.articles.insert_one(
+        {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
+         'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
+         'article_is_secret': article_is_secret,
+         'article_user_id': article_user_id})
+
+    return redirect('/article/known')
+
+
+# 게시판(익명 + 실명) 상세페이지 (GET ? POST ?)
+@app.route('/article/<article_key>', methods=['GET'])
+def read_articles(article_key):
+    # 조회 후 조회수 1 증가, 증가된 후의 값 return
+    article = db.articles.find_one_and_update({'_id': article_key},
+                                              {"$inc" : {"article_view" : 1}},return_document=True)
+==
+>>>>>>> d17fd41e77ed58af7ba3aa209767a56dd8a2326f
     if request.method == 'GET':
         return render_template('article_form.html', article_is_secret=False)
     else: 
@@ -213,10 +243,41 @@ def read_articles(article_id):
     if check() is True:
         return redirect('/')
     article = db.articles.find_one({'_id': ObjectId(article_id)})
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     user_id = get_jwt_identity()
     comments = db.comments.find({'article_key': ObjectId(article_id)})
+<<<<<<< HEAD
     is_like = db.likes.find_one({'user_id' : user_id,'article_key' : article['_id']})
     return render_template('article_detail.html', article=article, user_id=user_id, comments=comments, is_like=is_like)
+=======
+
+    
+
+<<<<<<< HEAD
+    return render_template('read.html', article=article, user_id=user_id)
+
+
+# 수정 버튼을 누르면
+@app.route('/article/<article_key>/modify', methods=['PUT'])
+def modify_articles(article_key):
+    article = db.articles.find_one({'_id': article_key})
+    return render_template('modify.html', article=article)
+
+
+# 수정완료 버튼을 누르면
+@app.route('/article/<article_key>/modify_pro')
+def modify_pro(article_key):
+    article_title = request.form['title_input']
+    article_content = request.form['content_input']
+    now = datetime.datetime.now()
+    article_modified_at = now.today()
+
+    db.articles.update_one({'_id': article_key}, {'$set': {'article_title': article_title,
+                                                          'article_content': article_content,
+                                                          'article_modified_at': article_modified_at}})
+=======
+    return render_template('article_detail.html', article=article, user_id=user_id, comments=comments)
+>>>>>>> d17fd41e77ed58af7ba3aa209767a56dd8a2326f
 
 
 # (완료)
@@ -231,6 +292,11 @@ def modify_pro(article_id):
     user_id = get_jwt_identity()
     if article.user_id != user_id:
         return redirect('/article/{}'.format(article_id))
+<<<<<<< HEAD
+=======
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
+
+>>>>>>> d17fd41e77ed58af7ba3aa209767a56dd8a2326f
     if request.method == 'GET':
         return render_template('article_form.html', article=article)
     else:
@@ -247,6 +313,13 @@ def modify_pro(article_id):
 
 # (완료)
 # 삭제
+<<<<<<< HEAD
+@app.route('/article/<article_key>/delete', methods=['DELETE'])
+def delete_articles(article_key):
+    db.articles.delete_one({'_id': article_key})
+    return redirect('/article/known')
+
+=======
 @app.route('/article/<article_id>/delete', methods=['POST'])
 def delete_articles(article_id):
     if check() is True:
@@ -254,6 +327,11 @@ def delete_articles(article_id):
 
     article = db.articles.find_one({'_id': ObjectId(article_id)})
     user_id = get_jwt_identity()
+<<<<<<< HEAD
+=======
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
+
+>>>>>>> d17fd41e77ed58af7ba3aa209767a56dd8a2326f
     if article.user_id != user_id:
         return redirect('/article/{}'.format(article_id))
     db.articles.delete_one({'_id': ObjectId(article_id)})
