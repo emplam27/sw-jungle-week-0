@@ -19,7 +19,7 @@ app.config['JWT_ACCESS_COOKIE_PATH'] = '/'  # access cookie를 보관할 url (Fr
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/'  # refresh cookie를 보관할 url (Frontend 기준)
 # CSRF 토큰 역시 생성해서 쿠키에 저장할지
 # (이 경우엔 프론트에서 접근해야하기 때문에 httponly가 아님)
-app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 
 # 로그아웃 Blacklist 관련 토큰체크 설정
 # 위에 써서 필요한가?(10번째 줄) app.config['JWT_SECRET_KEY'] = 'jungle-gym'  # Change this!

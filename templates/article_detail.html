@@ -40,11 +40,9 @@
   {% if user_id == article.user_id %}
     <div class="mt-5">
       <form action="/article/{{ article._id }}/modify" method="GET">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <button class="button is-success is-light" type="submit">게시글 수정</button>
       </form>
       <form action="/article/{{ article._id }}/delete" method="POST">
-        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
         <button class="button is-danger is-light" type="submit">게시글 삭제</button>
       </form>
     </div>

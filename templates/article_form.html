@@ -9,7 +9,6 @@
   </p>
 
   <form action="/article/known/post" method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="field">
       <label class="label">제목</label>
       <input class="input" name="article_title" type="text" placeholder="게시글 제목을 작성해주세요.">
@@ -32,7 +31,6 @@
   </p>
 
   <form action="/article/unknown/post" method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="field">
       <label class="label">제목</label>
       <input class="input" name="article_title" type="text" placeholder="게시글 제목을 작성해주세요.">
@@ -55,7 +53,6 @@
   </p>
 
   <form action="/article/{{ article._id }}/modify" method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="field">
       <label class="label">제목</label>
       <input class="input" name="article_title" type="text" value="{{ article.article_title}}">
@@ -78,7 +75,6 @@
   </p>
 
   <form action="/article/{{ article._id }}/modify" method="POST">
-    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
     <div class="field">
       <label class="label">제목</label>
       <input class="input" name="article_title" type="text" value="{{ article.article_title}}">
