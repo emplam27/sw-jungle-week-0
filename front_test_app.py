@@ -50,16 +50,20 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
-                    'ordinal': ordinal}
+        user = db.users.find_one({'user_name': username, 'user_email' : email})
 
-        if not (userid and username and password and re_password):
-            return "모두 입력해주세요"
+        if user is None:
+            return jsonify({'result' : 'fail' , 'msg' : 'student error'})
+        elif not (userid and username and password and re_password):
+            return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
         elif password != re_password:
-            return "비밀번호를 확인해주세요"
+            return jsonify({'result' : 'fail','msg' : "pw error"})
         else:  # 모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
+            userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
+                        'ordinal': ordinal}
             db.users.insert_one(userinfo)
             return jsonify({'result' : "success"})
+
 
 
 # 로그인
@@ -138,8 +142,11 @@ def known_post_articles():
 # 게시판(익명 + 실명) 상세페이지 (GET ? POST ?)
 @app.route('/article/<article_id>', methods=['GET'])
 def read_articles(article_id):
-    article = db.articles.find_one({'_id': article_id})
+    # 조회 후 조회수 1 증가, 증가된 후의 값 return
+    article = db.articles.find_one_and_update({'_id': article_id},
+                                              {"$inc" : {"article_view" : 1}},return_document=True)
     user_id = get_jwt_identity()
+
 
     return render_template('read.html', article=article, user_id=user_id)
 
