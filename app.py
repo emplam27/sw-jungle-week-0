@@ -35,6 +35,9 @@ db = client.dbname
 #                         'comment_created_at' : datetime.datetime.now().today()})
 # db.likes.insert_one({'user_id' : 'test' , 'article_key' : 123})
 #
+
+
+
 @jwt_optional
 def check():
     user_id = get_jwt_identity()
@@ -47,7 +50,10 @@ def check():
 @app.route('/')
 @jwt_optional
 def home():
-    return render_template('login.html')
+    if get_jwt_identity():
+        return redirect('/article/known')
+    else:
+        return render_template('login.html')
 
 
 # 회원가입
@@ -93,7 +99,6 @@ def check_id():
 
 # 로그인
 @app.route('/user/login', methods=['POST'])
-@jwt_required
 def login():
 
 
@@ -195,7 +200,7 @@ def read_articles(article_key):
     comment = list(db.comments.find({'article_key' : ObjectId(article_key)}))
 
 
-    return render_template('read.html', article=article, user_id=user_id, comment=comment)
+    return render_template('article_detail.html', article=article, user_id=user_id, comment=comment)
 
 # 게시판 좋아요 기능 ## 주소
 @app.route('/article/<article_key>/like')
