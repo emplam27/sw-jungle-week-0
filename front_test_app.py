@@ -1,7 +1,10 @@
-from flask import Flask, render_template, request, jsonify, redirect
+import os
+from flask import Flask, render_template, request, jsonify, redirect, make_response
 from flask_jwt_extended import *
+from flask_wtf.csrf import CSRFProtect
 from pymongo import MongoClient
 import datetime
+from bson.objectid import ObjectId
 
 app = Flask(__name__)
 
@@ -18,14 +21,18 @@ app.config['JWT_ACCESS_COOKIE_PATH'] = '/'  # access cookie를 보관할 url (Fr
 app.config['JWT_REFRESH_COOKIE_PATH'] = '/'  # refresh cookie를 보관할 url (Frontend 기준)
 # CSRF 토큰 역시 생성해서 쿠키에 저장할지
 # (이 경우엔 프론트에서 접근해야하기 때문에 httponly가 아님)
-app.config['JWT_COOKIE_CSRF_PROTECT'] = True
+app.config['JWT_COOKIE_CSRF_PROTECT'] = False
+
+# csrf
+csrf = CSRFProtect()
+csrf.init_app(app)
+SECRET_KEY = os.urandom(32)
+app.config['SECRET_KEY'] = SECRET_KEY
 
 # Mongo DB
 client = MongoClient('localhost', 27017)
 db = client.w0projectdb
 
-# test - id
-db.users.insert_one({'user_id': 'test', 'user_pwd': 'test', 'user_name': '정글', 'user_email': '.com', 'user_ordinal': 1})
 
 
 @app.route('/')
@@ -50,20 +57,16 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        user = db.users.find_one({'user_name': username, 'user_email' : email})
+        userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
+                    'ordinal': ordinal}
 
-        if user is None:
-            return jsonify({'result' : 'fail' , 'msg' : 'student error'})
-        elif not (userid and username and password and re_password):
-            return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
+        if not (userid and username and password and re_password):
+            return "모두 입력해주세요"
         elif password != re_password:
-            return jsonify({'result' : 'fail','msg' : "pw error"})
+            return "비밀번호를 확인해주세요"
         else:  # 모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
-            userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
-                        'ordinal': ordinal}
             db.users.insert_one(userinfo)
             return jsonify({'result' : "success"})
-
 
 
 # 로그인
@@ -80,46 +83,38 @@ def login():
     access_token = create_access_token(identity=user_id, expires_delta=False)
     refresh_token = create_refresh_token(identity=user_id)
 
-    resp = jsonify({'login': True})
+    resp = make_response(redirect('/article/known'))
 
     # 서버에 저장
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
 
-    print(access_token)
-    print(refresh_token)
-    return redirect('/article/known')
+    return resp
 
-
-# 목록페이지 보기
+# (완료)
+# 실명 게시판 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
+@jwt_required
 def get_known_article():
-    # articles = list(db.articles.find({}, {'_id': False}).sort('article_created_at', -1))
-    articles = list(db.articles.find({}))
+    articles = list(db.articles.find({'article_is_secret': False}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
 
+# (완료)
+# 익명 게시판 목록페이지 보기
 @app.route('/article/unknown', methods=['GET'])
+@jwt_required
 def get_unknown_article():
-    # articles = list(db.articles.find({}, {'_id': False}).sort('article_created_at', -1))
-    articles = list(db.articles.find({}))
+    articles = list(db.articles.find({'article_is_secret': True}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
 
 
-# 실명게시판 글쓰기버튼 작동
-@app.route('/article/known/write')
-def known_write_articles():
-    return render_template('modify.html', article_is_secret=False)
-
-
-# 익명게시판 글쓰기버튼
-@app.route('/article/unknown/write')
-def unknonw_write_articles():
-    return render_template('modify.html', article_is_secret=True)
-
-
-# 실명게시판 글쓰기 완료버튼 작동
-@app.route('/article/known/post', methods=['POST'])
+# (완료)
+# 실명게시판 글쓰기
+@app.route('/article/known/post', methods=['GET', 'POST'])
+@jwt_required
+@csrf.exempt
 def known_post_articles():
+<<<<<<< HEAD
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
@@ -145,9 +140,70 @@ def read_articles(article_key):
     # 조회 후 조회수 1 증가, 증가된 후의 값 return
     article = db.articles.find_one_and_update({'_id': article_key},
                                               {"$inc" : {"article_view" : 1}},return_document=True)
+==
+    if request.method == 'GET':
+        return render_template('article_form.html', article_is_secret=False)
+    else: 
+        article_title = request.form['article_title']
+        article_content = request.form['article_content']
+        now = datetime.datetime.now()
+        article_created_at = now.today()  # 시간
+        article_modified_at = now.today()  # 시간
+        article_view = 0
+        article_like = 0
+        article_is_secret = False
+        article_user_id = get_jwt_identity()
+
+        db.articles.insert_one(
+            {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
+            'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
+            'article_is_secret': article_is_secret,
+            'user_id': article_user_id})
+
+        return redirect('/article/known')
+
+# (완료)
+# 익명게시판 글쓰기
+@app.route('/article/unknown/post', methods=['GET', 'POST'])
+@jwt_required
+@csrf.exempt
+def unknonw_write_articles():
+    if request.method == 'GET':
+        return render_template('article_form.html', article_is_secret=True)
+
+    else: 
+        article_title = request.form['article_title']
+        article_content = request.form['article_content']
+        now = datetime.datetime.now()
+        article_created_at = now.today()  # 시간
+        article_modified_at = now.today()  # 시간
+        article_view = 0
+        article_like = 0
+        article_is_secret = True
+        article_user_id = get_jwt_identity()
+
+        db.articles.insert_one(
+            {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
+            'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
+            'article_is_secret': article_is_secret,
+            'user_id': article_user_id})
+
+        return redirect('/article/unknown')
+
+
+# (완료)
+# 게시판 상세페이지 (익명 + 실명)
+@app.route('/article/<article_id>', methods=['GET'])
+@jwt_required
+def read_articles(article_id):
+    article = db.articles.find_one({'_id': ObjectId(article_id)})
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     user_id = get_jwt_identity()
+    comments = db.comments.find({'article_key': ObjectId(article_id)})
 
+    
 
+<<<<<<< HEAD
     return render_template('read.html', article=article, user_id=user_id)
 
 
@@ -169,37 +225,57 @@ def modify_pro(article_key):
     db.articles.update_one({'_id': article_key}, {'$set': {'article_title': article_title,
                                                           'article_content': article_content,
                                                           'article_modified_at': article_modified_at}})
+=======
+    return render_template('article_detail.html', article=article, user_id=user_id, comments=comments)
 
-    return redirect('/article/known')
+
+# (완료)
+# 게시글 수정 (익명 + 실명)
+@app.route('/article/<article_id>/modify', methods=['GET', 'POST'])
+@jwt_required
+def modify_pro(article_id):
+    article = db.articles.find_one({'_id': ObjectId(article_id)})
+    user_id = get_jwt_identity()
+
+    if article.user_id != user_id:
+        return redirect('/article/{}'.format(article_id))
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
+
+    if request.method == 'GET':
+        return render_template('article_form.html', article=article)
+    
+    else:
+        article_title = request.form['article_title']
+        article_content = request.form['article_content']
+        now = datetime.datetime.now()
+        article_modified_at = now.today()
+        db.articles.update_one({'_id': ObjectId(article_id)}, {'$set': {'article_title': article_title,
+                                                            'article_content': article_content,
+                                                            'article_modified_at': article_modified_at}})
+
+        return redirect('/article/{}'.format(article_id))
 
 
+# (완료)
 # 삭제
+<<<<<<< HEAD
 @app.route('/article/<article_key>/delete', methods=['DELETE'])
 def delete_articles(article_key):
     db.articles.delete_one({'_id': article_key})
     return redirect('/article/known')
 
+=======
+@app.route('/article/<article_id>/delete', methods=['POST'])
+def delete_articles(article_id):
+    article = db.articles.find_one({'_id': ObjectId(article_id)})
+    user_id = get_jwt_identity()
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
 
-# 익명게시판 글쓰기 완료시 작동
-@app.route('/article/unknown', methods=['POST'])
-def unknown_post_articles():
-    article_title = request.form['title_input']
-    article_content = request.form['content_input']
-    now = datetime.datetime.now()
-    article_created_at = now.today()  # 시간
-    article_modified_at = now.today()  # 시간
-    article_view = 0
-    article_like = 0
-    article_is_secret = True
-    article_user_id = get_jwt_identity()
-
-    db.articles.insert_one(
-        {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
-         'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
-         'article_is_secret': article_is_secret,
-         'article_user_id': article_user_id})
-
-    return redirect('/article/unknown')
+    if article.user_id != user_id:
+        return redirect('/article/{}'.format(article_id))
+    
+    db.articles.delete_one({'_id': ObjectId(article_id)})
+    return redirect('/article/known')
 
 
 

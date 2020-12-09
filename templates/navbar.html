@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Hello Bulma!</title>
+    <title>서비스 이름</title>
     <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.css') }}" />
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
@@ -60,19 +60,5 @@
   </body>
 </html>
 
-<style>
-  .navbar {
-    padding: 24px 0 16px;
-    box-shadow: 0px -5px 6px 6px rgba(0, 0, 0, 0.32);
-  }
-
-  .logo-image {
-    width: 80px;
-  }
-
-  .logo-text {
-    color: green;
-    font-size: 2rem;
-    font-weight: 700;
-  }
-</style>
+{% block script %}
+{% endblock %}

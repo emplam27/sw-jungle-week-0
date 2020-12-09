@@ -4,20 +4,38 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
 {% endblock %}
 
+
 {% block content %}
   <p class="title">
     {{ article.article_title }}
   </p>
-  <p>{{ article.article_created_at }}</p>
+  {% if not article.article_is_secret %}
+    <p>작성자: {{ article.user_id }}</p>
+  {% endif %}
+  <p>작성시간: {{ article.article_created_at }}</p>
   <p>조회수: {{ article.article_view }}</p>
   <hr>
   <p>{{ article.article_content }}</p>
-  <p>좋아요: {{ article.article_like }}</p>
+  
+  <div id="like-button">
+    <button class="button is-danger is-outlined is-medium">
+      <div class="p-3">
+        <i class="far fa-heart fa-lg mr-3"></i>
+        {{ article.article_like }}
+      </div>
+    </button>    
+  </div>
 
   {% if user_id == article.user_id %}
     <div class="mt-5">
-      <button class="button is-success is-light">게시글 수정</button>
-      <button class="button is-danger is-light">게시글 삭제</button>
+      <form action="/article/{{ article._id }}/modify" method="GET">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="button is-success is-light" type="submit">게시글 수정</button>
+      </form>
+      <form action="/article/{{ article._id }}/delete" method="POST">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+        <button class="button is-danger is-light" type="submit">게시글 삭제</button>
+      </form>
     </div>
   {% endif %}
 
@@ -48,5 +66,12 @@
     <hr>
     {% endfor %}
   </div>
+{% endblock %}
 
+
+{% block script %}
+<script>
+  const likeButton = document.getElementById('like-button')
+  
+</script>
 {% endblock %}

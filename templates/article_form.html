@@ -1,16 +1,98 @@
 {% extends "navbar.html" %}
 
 {% block content %}
-  <h1 class="title">
-    글 작성
-  </h1>
-  <p class="subtitle">
-    My first website with <strong>Bulma</strong>!
+
+{% if (not article_is_secret) and (not article) %}
+  <!-- 자유게시판 게시글 작성 -->
+  <p class="title pt-5">
+    자유게시판 게시글 작성
   </p>
-  <ul>
-    <li>1</li>
-    <li>1</li>
-    <li>1</li>
-    <li>1</li>
-  </ul>
+
+  <form action="/article/known/post" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="field">
+      <label class="label">제목</label>
+      <input class="input" name="article_title" type="text" placeholder="게시글 제목을 작성해주세요.">
+    </div>
+    
+    <div class="comment-textarea">
+      <label class="label">내용</label>
+      <textarea class="textarea" name="article_content" placeholder="게시글 내용을 작성해주세요." rows="15"></textarea>
+    </div>
+    <br/>
+    <div class="field">
+      <button class="button is-primary is-medium comment-button" type="submit">작성하기</button>
+    </div>
+  </form>
+
+{% elif (article_is_secret) and (not article) %}
+  <!-- 익명게시판 게시글 작성 -->
+  <p class="title pt-5">
+    익명게시판 게시글 작성
+  </p>
+
+  <form action="/article/unknown/post" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="field">
+      <label class="label">제목</label>
+      <input class="input" name="article_title" type="text" placeholder="게시글 제목을 작성해주세요.">
+    </div>
+    
+    <div class="comment-textarea">
+      <label class="label">내용</label>
+      <textarea class="textarea" name="article_content" placeholder="게시글 내용을 작성해주세요." rows="15"></textarea>
+    </div>
+    <br/>
+    <div class="field">
+      <button class="button is-primary is-medium comment-button" type="submit">작성하기</button>
+    </div>
+  </form>
+
+{% elif (not article_is_secret) and (article) %}
+  <!-- 자유게시판 게시글 수정 -->
+  <p class="title pt-5">
+    자유게시판 게시글 수정
+  </p>
+
+  <form action="/article/{{ article._id }}/modify" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="field">
+      <label class="label">제목</label>
+      <input class="input" name="article_title" type="text" value="{{ article.article_title}}">
+    </div>
+    
+    <div class="comment-textarea">
+      <label class="label">내용</label>
+      <textarea class="textarea" name="article_content" type="text" rows="15">{{ article.article_content}}</textarea>
+    </div>
+    <br/>
+    <div class="field">
+      <button class="button is-primary is-medium comment-button" type="submit">수정하기</button>
+    </div>
+  </form>
+
+{% else %}
+  <!-- 익명게시판 게시글 수정 -->
+  <p class="title pt-5">
+    익명게시판 게시글 수정
+  </p>
+
+  <form action="/article/{{ article._id }}/modify" method="POST">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}"/>
+    <div class="field">
+      <label class="label">제목</label>
+      <input class="input" name="article_title" type="text" value="{{ article.article_title}}">
+    </div>
+    
+    <div class="comment-textarea">
+      <label class="label">내용</label>
+      <textarea class="textarea" name="article_content" rows="15">{{ article.article_content}}</textarea>
+    </div>
+    <br/>
+    <div class="field">
+      <button class="button is-primary is-medium comment-button">수정하기</button>
+    </div>
+  </form>
+{% endif %}
+
 {% endblock %}
