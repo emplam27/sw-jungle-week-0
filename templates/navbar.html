@@ -15,35 +15,23 @@
     <nav class="navbar" role="navigation" aria-label="main navigation">
       <div class="container">
         <div class="navbar-brand">
-          <a class="navbar-item" href="/article/known">
-            <img class="logo-image" src="{{ url_for('static', filename='img/big-icon.png') }}" alt="jungle icon" />
-            <p class="logo-text pl-4">서비스명</p>
-          </a>
-
-          <a
-            role="button"
-            class="navbar-burger burger"
-            aria-label="menu"
-            aria-expanded="false"
-            data-target="navbarBasicExample"
-          >
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-            <span aria-hidden="true"></span>
-          </a>
         </div>
-
+        
         <div id="navbarBasicExample" class="navbar-menu">
           <div class="navbar-start">
-            <a class="navbar-item"> 공지사항 </a>
-            <a class="navbar-item" href="/article/known"> 자유게시판 </a>
-            <a class="navbar-item" href="/article/unknown"> 익명게시판 </a>
+            <a class="navbar-item" href="/article/known">
+              <img class="logo-image" src="{{ url_for('static', filename='img/big-icon.png') }}" alt="jungle icon" />
+              <p class="logo-text pl-4">정글짐</p>
+            </a>
+            <a class="navbar-item ml-5"> 공지사항 </a>
+            <a class="navbar-item ml-5" href="/article/known"> 자유게시판 </a>
+            <a class="navbar-item ml-5" href="/article/unknown"> 익명게시판 </a>
           </div>
           <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
                 <form action = "/token/remove" class="is-primary" method = "POST">
-                  <button class="button is-primary is-medium comment-button">
+                  <button class="button green-button is-medium comment-button">
                     <strong>로그아웃</strong>
                   </button>
                 </form>
@@ -53,6 +41,7 @@
         </div>
       </div>
     </nav>
+    <img class="background-image" src="{{ url_for('static', filename='img/jungle_gym.svg') }}" alt="background-image">
     <section class="section">
       <div class="container">
         {% block content %}

@@ -127,7 +127,6 @@ def logout():
 
 
 
-# (완료)
 # 실명 게시판 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
 @jwt_required
@@ -139,7 +138,6 @@ def get_known_article():
     return render_template('article_home.html', articles=articles)
 
 
-# (완료)
 # 익명 게시판 목록페이지 보기
 @app.route('/article/unknown', methods=['GET'])
 @jwt_optional
@@ -150,11 +148,9 @@ def get_unknown_article():
     return render_template('article_home.html', articles=articles)
 
 
-# (완료)
 # 실명게시판 글쓰기
 @app.route('/article/known/post', methods=['GET', 'POST'])
 @jwt_optional
-# @csrf.exempt
 def known_post_articles():
     if check() is True:
         return redirect('/')
@@ -182,11 +178,9 @@ def known_post_articles():
         return redirect('/article/known')
 
 
-# (완료)
 # 익명게시판 글쓰기
 @app.route('/article/unknown/post', methods=['GET', 'POST'])
 @jwt_optional
-# @csrf.exempt
 def unknonw_write_articles():
     if check() is True:
         return redirect('/')
@@ -214,8 +208,7 @@ def unknonw_write_articles():
         return redirect('/article/unknown')
 
 
-# (완료)
-# 게시판 상세페이지 (익명 + 실명)
+# 게시글 상세페이지 (익명 + 실명)
 @app.route('/article/<article_id>', methods=['GET'])
 @jwt_optional
 def article_detail(article_id):
@@ -232,7 +225,6 @@ def article_detail(article_id):
     return render_template('article_detail.html', article=article, user_id=user_id, comments=comments, is_like=is_like)
 
 
-# (완료)
 # 게시글 수정 (익명 + 실명)
 @app.route('/article/<article_id>/modify', methods=['GET', 'POST'])
 @jwt_optional
@@ -260,8 +252,7 @@ def modify_pro(article_id):
         return redirect('/article/{}'.format(article_id))
 
 
-# (완료)
-# 삭제
+# 게시글 삭제
 @app.route('/article/<article_id>/delete', methods=['POST'])
 def delete_articles(article_id):
     if check() is True:
@@ -274,8 +265,8 @@ def delete_articles(article_id):
     db.articles.delete_one({'_id': ObjectId(article_id)})
     return redirect('/article/known')
 
-# (완료)
-# 게시판 좋아요 기능
+
+# 게시글 좋아요
 @app.route('/article/<article_key>/like')
 @jwt_optional
 def like_articles(article_key):
@@ -297,7 +288,7 @@ def like_articles(article_key):
         return jsonify({"result" : "non-like"})
 
 
-# 댓글 완료 버튼
+# 댓글 작성
 @app.route('/article/<article_key>/comment', methods=["POST"])
 @jwt_optional
 def post_comment(article_key):
@@ -317,11 +308,7 @@ def post_comment(article_key):
 
     return redirect('/article/{}'.format(article_key))
 
-# 댓글 수정버튼 누르면
-
-
-# 댓글 수정완료 버튼
-# 그 놈 클릭 시 어떻게 댓글 지칭?
+# 댓글 수정
 @app.route('/comment/<comment_key>/modify', methods=["POST"])
 def modify_comment(comment_key):
     if check() is True:
@@ -333,11 +320,9 @@ def modify_comment(comment_key):
                            {'$set' : {'comment_content' : comment_content}})
     article_key = comment['article_key']
     return redirect("/article/{}".format(article_key))
-    # return redirect(url_for("read_articles", article_key = article_key))
 
-    # return redirect('/article/{}'.format(article_key), comment = comment)
 
-# 댓글 삭제 버튼
+# 댓글 삭제
 @app.route('/comment/<comment_key>/delete', methods=["POST"])
 def delete_comment(comment_key):
     if check() is True:

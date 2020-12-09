@@ -4,11 +4,31 @@
 }
 
 .logo-image {
-  width: 80px;
+  height: 50px;
 }
 
 .logo-text {
-  color: blue;
+  color: rgb(62, 162, 114);
   font-size: 2rem;
   font-weight: 700;
+}
+
+.navbar-item {
+  font-size: 1.2rem;
+  font-weight: 500;
+}
+
+.background-image {
+  position: absolute;
+  bottom: 0;
+  left: 40vw;
+  opacity: 0.1;
+  height: 60vh;
+  width: 60vw;
+}
+
+.green-button {
+  background-color: rgb(62, 162, 114, 0.9);
+  color: white;
+  font-weight: 500;
 }

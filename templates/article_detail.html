@@ -6,7 +6,7 @@
 
 
 {% block content %}
-  <div class="article-title-box">
+  <div class="article-title-box pt-5">
     <div>
       <p id="article-id" style="display: none;">{{ article._id }}</p>
       <p class="title">
@@ -14,8 +14,10 @@
       </p>
       {% if not article.article_is_secret %}
         <span class="subtitle mr-3"><strong>{{ article.user_id }}</strong></span>
-        <span class="subtitle mr-3">|</span>
+      {% else %}
+        <span class="subtitle mr-3"><strong>익명</strong></span>
       {% endif %}
+      <span class="subtitle mr-3">|</span>
       <span class="subtitle mr-3">{{ article.article_created_at }}</span>
       <span class="subtitle mr-3">|</span>
       <span class="subtitle mr-1"><i class="fas fa-eye"></i></span>
@@ -61,29 +63,51 @@
       <div class="comment-textarea">
         <textarea class="textarea" name="comment_content" placeholder="댓글을 작성해주세요." rows="2"></textarea>
       </div>
-      <button class="button is-primary comment-button">댓글달기</button>
+      <button class="button green-button comment-button">댓글달기</button>
     </form>
     <hr>
 
-    {% for comment in comments %}
-    <div id="comment-{{ comment._id }}" class="comment-list">
-      <div>
-        <span class="comment-user mr-2">{{ comment.user_id }}</span>
-        <span class="comment-time"> | </span>
-        <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
-        <div class="comment-content pt-2">{{ comment.comment_content }}</div>
-      </div>
-      {% if user_id == comment.user_id %}
-        <div>
-          <button class="button is-success is-light" onclick="changeCommentForm(`{{ comment._id }}`, `{{ comment.user_id }}`, `{{ comment.article_key }}`, `{{ comment.comment_content }}`, `{{ comment.comment_modified_at }}`)">댓글 수정</button>
-          <form action="/comment/{{ comment._id }}/delete" method="POST">
-            <button class="button is-danger is-light">댓글 삭제</button>
-          </form>
+    {% if not article.article_is_secret %}
+      {% for comment in comments %}
+        <div id="comment-{{ comment._id }}" class="comment-list">
+          <div>
+            <span class="comment-user mr-2">{{ comment.user_id }}</span>
+            <span class="comment-time"> | </span>
+            <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
+            <div class="comment-content pt-2">{{ comment.comment_content }}</div>
+          </div>
+          {% if user_id == comment.user_id %}
+            <div>
+              <button class="button is-success is-light" onclick="changeCommentForm(`{{ comment._id }}`, `{{ comment.user_id }}`, `{{ comment.article_key }}`, `{{ comment.comment_content }}`, `{{ comment.comment_modified_at }}`)">댓글 수정</button>
+              <form action="/comment/{{ comment._id }}/delete" method="POST">
+                <button class="button is-danger is-light">댓글 삭제</button>
+              </form>
+            </div>
+          {% endif %}
         </div>
-      {% endif %}
-    </div>
-    <hr>
-    {% endfor %}
+        <hr>
+      {% endfor %}
+    {% else %}
+      {% for comment in comments %}
+        <div id="comment-{{ comment._id }}" class="comment-list">
+          <div>
+            <span class="comment-user mr-2">익명</span>
+            <span class="comment-time"> | </span>
+            <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
+            <div class="comment-content pt-2">{{ comment.comment_content }}</div>
+          </div>
+          {% if user_id == comment.user_id %}
+            <div>
+              <button class="button is-success is-light" onclick="changeCommentForm(`{{ comment._id }}`, `{{ comment.user_id }}`, `{{ comment.article_key }}`, `{{ comment.comment_content }}`, `{{ comment.comment_modified_at }}`)">댓글 수정</button>
+              <form action="/comment/{{ comment._id }}/delete" method="POST">
+                <button class="button is-danger is-light">댓글 삭제</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+        <hr>
+      {% endfor %}
+    {% endif %}
   </div>
 {% endblock %}
 
