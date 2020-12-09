@@ -30,3 +30,35 @@
 .comment-content {
   font-weight: 500;
 }
+
+.like-button-outlined {
+  border: 1px solid hsl(348, 100%, 61%);
+  border-radius: 4px;
+  color: hsl(348, 100%, 61%);
+  width: fit-content;
+}
+
+.like-button-full {
+  border: 1px solid hsl(348, 100%, 61%);
+  border-radius: 4px;
+  background-color: hsl(348, 100%, 61%);
+  color: white;
+  width: fit-content;
+}
+
+.comment-modify {
+  width: 100%;
+}
+
+.comment-modify-form {
+  display: flex;
+  width: 100%;
+}
+
+.comment-modify-button {
+  display: flex;
+}
+
+.comment-modify-textarea {
+  width: 100%;
+}

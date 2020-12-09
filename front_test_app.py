@@ -23,7 +23,7 @@ app.config['JWT_REFRESH_COOKIE_PATH'] = '/'  # refresh cookie를 보관할 url (
 # (이 경우엔 프론트에서 접근해야하기 때문에 httponly가 아님)
 app.config['JWT_COOKIE_CSRF_PROTECT'] = False
 
-# # csrf
+# csrf
 # csrf = CSRFProtect()
 # csrf.init_app(app)
 # SECRET_KEY = os.urandom(32)
@@ -244,9 +244,10 @@ def modify_pro(article_id):
     user_id = get_jwt_identity()
     if article['user_id'] != user_id:
         return redirect('/article/{}'.format(article_id))
+    article_is_secret = article['article_is_secret']
 
     if request.method == 'GET':
-        return render_template('article_form.html', article=article)
+        return render_template('article_form.html', article=article, article_is_secret=article_is_secret)
 
     else:
         article_title = request.form['article_title']
@@ -273,8 +274,8 @@ def delete_articles(article_id):
     db.articles.delete_one({'_id': ObjectId(article_id)})
     return redirect('/article/known')
 
-
-# 게시판 좋아요 기능 ## 주소
+# (완료)
+# 게시판 좋아요 기능
 @app.route('/article/<article_key>/like')
 @jwt_optional
 def like_articles(article_key):
@@ -321,7 +322,7 @@ def post_comment(article_key):
 
 # 댓글 수정완료 버튼
 # 그 놈 클릭 시 어떻게 댓글 지칭?
-@app.route('/article/<comment_key>', methods=["PUT"])
+@app.route('/comment/<comment_key>/modify', methods=["POST"])
 def modify_comment(comment_key):
     if check() is True:
         return redirect('/')
@@ -331,13 +332,13 @@ def modify_comment(comment_key):
     db.comments.update_one({'_id' : ObjectId(comment_key)},
                            {'$set' : {'comment_content' : comment_content}})
     article_key = comment['article_key']
-    # return redirect("/article/{}".format(article_key))
-    return redirect(url_for("read_articles", article_key = article_key))
+    return redirect("/article/{}".format(article_key))
+    # return redirect(url_for("read_articles", article_key = article_key))
 
     # return redirect('/article/{}'.format(article_key), comment = comment)
 
 # 댓글 삭제 버튼
-@app.route('/article/<comment_key>', methods=["DELETE"])
+@app.route('/comment/<comment_key>/delete', methods=["POST"])
 def delete_comment(comment_key):
     if check() is True:
         return redirect('/')
