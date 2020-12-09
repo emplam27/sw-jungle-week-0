@@ -57,20 +57,16 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        user = db.users.find_one({'user_name': username, 'user_email' : email})
+        userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
+                    'ordinal': ordinal}
 
-        if user is None:
-            return jsonify({'result' : 'fail' , 'msg' : 'student error'})
-        elif not (userid and username and password and re_password):
-            return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
+        if not (userid and username and password and re_password):
+            return "모두 입력해주세요"
         elif password != re_password:
-            return jsonify({'result' : 'fail','msg' : "pw error"})
+            return "비밀번호를 확인해주세요"
         else:  # 모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
-            userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
-                        'ordinal': ordinal}
             db.users.insert_one(userinfo)
             return jsonify({'result' : "success"})
-
 
 
 # 로그인
@@ -173,27 +169,13 @@ def unknonw_write_articles():
 @app.route('/article/<article_id>', methods=['GET'])
 @jwt_required
 def read_articles(article_id):
-<<<<<<< HEAD
     article = db.articles.find_one({'_id': ObjectId(article_id)})
     user_id = get_jwt_identity()
     comments = db.comments.find({'article_key': ObjectId(article_id)})
+
+    
+
     return render_template('article_detail.html', article=article, user_id=user_id, comments=comments)
-=======
-    # 조회 후 조회수 1 증가, 증가된 후의 값 return
-    article = db.articles.find_one_and_update({'_id': article_id},
-                                              {"$inc" : {"article_view" : 1}},return_document=True)
-    user_id = get_jwt_identity()
-
-
-    return render_template('read.html', article=article, user_id=user_id)
-
-
-# 수정 버튼을 누르면
-@app.route('/article/<article_id>/modify', methods=['PUT'])
-def modify_articles(article_id):
-    article = db.articles.find_one({'_id': article_id})
-    return render_template('modify.html', article=article)
->>>>>>> e10cd907ee7c77bb4f23f7afdc801ae9007e0f0b
 
 
 # (완료)

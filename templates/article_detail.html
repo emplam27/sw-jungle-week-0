@@ -17,7 +17,7 @@
   <hr>
   <p>{{ article.article_content }}</p>
   
-  <div>
+  <div id="like-button">
     <button class="button is-danger is-outlined is-medium">
       <div class="p-3">
         <i class="far fa-heart fa-lg mr-3"></i>
@@ -71,6 +71,7 @@
 
 {% block script %}
 <script>
-  const 
+  const likeButton = document.getElementById('like-button')
+  
 </script>
 {% endblock %}
