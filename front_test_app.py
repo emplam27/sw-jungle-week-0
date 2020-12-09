@@ -39,6 +39,7 @@ def check():
     user_id = get_jwt_identity()
     jungle_id = list(map(lambda x: x['user_id'], db.users.find({})))
     # jungle_id = jungle_users[0]
+    # 없으면 true
     if ((user_id not in jungle_id) or (user_id is None)):
         return True
 
@@ -69,11 +70,12 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        user = db.students.find_one({'user_name': username, 'user_email' : email})
+        user = db.students.find_one({'stu_name': username, 'stu_email' : email})
 
         if user is None:
             return jsonify({'result' : 'fail' , 'msg' : 'student error'})
         elif not (userid and username and password and re_password):
+            print(userid, username, password, re_password)
             return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
         elif password != re_password:
             return jsonify({'result' : 'fail','msg' : "pw error"})
@@ -115,6 +117,16 @@ def login():
     return resp
 
 
+# 로그아웃
+@app.route('/token/remove', methods=['POST'])
+def logout():
+    # resp = jsonify({'logout': True})
+    resp = make_response(redirect('/'))
+    unset_jwt_cookies(resp)
+    return resp
+
+
+
 # (완료)
 # 실명 게시판 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
@@ -122,6 +134,7 @@ def login():
 def get_known_article():
     if check() is True:
         return redirect('/')
+
     articles = list(db.articles.find({'article_is_secret': False}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
 
@@ -129,7 +142,7 @@ def get_known_article():
 # (완료)
 # 익명 게시판 목록페이지 보기
 @app.route('/article/unknown', methods=['GET'])
-@jwt_required
+@jwt_optional
 def get_unknown_article():
     if check() is True:
         return redirect('/')
@@ -140,7 +153,7 @@ def get_unknown_article():
 # (완료)
 # 실명게시판 글쓰기
 @app.route('/article/known/post', methods=['GET', 'POST'])
-@jwt_required
+@jwt_optional
 # @csrf.exempt
 def known_post_articles():
     if check() is True:
@@ -172,7 +185,7 @@ def known_post_articles():
 # (완료)
 # 익명게시판 글쓰기
 @app.route('/article/unknown/post', methods=['GET', 'POST'])
-@jwt_required
+@jwt_optional
 # @csrf.exempt
 def unknonw_write_articles():
     if check() is True:
@@ -204,10 +217,11 @@ def unknonw_write_articles():
 # (완료)
 # 게시판 상세페이지 (익명 + 실명)
 @app.route('/article/<article_id>', methods=['GET'])
-@jwt_required
+@jwt_optional
 def article_detail(article_id):
     if check() is True:
         return redirect('/')
+
     article = db.articles.find_one({'_id': ObjectId(article_id)})
     user_id = get_jwt_identity()
     comments = db.comments.find({'article_key': ObjectId(article_id)})
@@ -221,7 +235,7 @@ def article_detail(article_id):
 # (완료)
 # 게시글 수정 (익명 + 실명)
 @app.route('/article/<article_id>/modify', methods=['GET', 'POST'])
-@jwt_required
+@jwt_optional
 def modify_pro(article_id):
     if check() is True:
         return redirect('/')
@@ -263,7 +277,7 @@ def delete_articles(article_id):
 # (완료)
 # 게시판 좋아요 기능
 @app.route('/article/<article_key>/like')
-@jwt_required
+@jwt_optional
 def like_articles(article_key):
     if check() is True:
         return redirect('/')
@@ -285,7 +299,7 @@ def like_articles(article_key):
 
 # 댓글 완료 버튼
 @app.route('/article/<article_key>/comment', methods=["POST"])
-@jwt_required
+@jwt_optional
 def post_comment(article_key):
     if check() is True:
         return redirect('/')

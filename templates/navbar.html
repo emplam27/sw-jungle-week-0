@@ -39,13 +39,14 @@
             <a class="navbar-item" href="/article/known"> 자유게시판 </a>
             <a class="navbar-item" href="/article/unknown"> 익명게시판 </a>
           </div>
-
           <div class="navbar-end">
             <div class="navbar-item">
               <div class="buttons">
-                <a class="button is-primary">
-                  <strong>로그아웃</strong>
-                </a>
+                <form action = "/token/remove" class="is-primary" method = "POST">
+                  <button class="button is-primary is-medium comment-button">
+                    <strong>로그아웃</strong>
+                  </button>
+                </form>
               </div>
             </div>
           </div>
