@@ -1,4 +1,4 @@
-from flask import Flask, render_template, request, jsonify, redirect,make_response
+from flask import Flask, render_template, request, jsonify, redirect,make_response, url_for
 from flask_jwt_extended import *
 from pymongo import MongoClient
 import datetime
@@ -49,13 +49,27 @@ db = client.dbname
 
 
 
+<<<<<<< HEAD
+=======
+@jwt_optional
+def check():
+    user_id = get_jwt_identity()
+    jungle_id = list(map(lambda x: x['user_id'], db.users.find({})))
+    print(jungle_id)
+    # jungle_id = jungle_users[0]
+    if ((user_id not in jungle_id) or (user_id is None)):
+        return True
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
 
 @app.route('/')
 @jwt_optional
 def home():
     if get_jwt_identity():
         return redirect('/article/known')
+<<<<<<< HEAD
 
+=======
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     else:
         return render_template('login.html')
 
@@ -77,7 +91,7 @@ def register():
         password = request.form.get('password')
         re_password = request.form.get('re_password')
 
-        user = db.users.find_one({'user_name': username, 'user_email' : email})
+        user = db.students.find_one({'user_name': username, 'user_email' : email})
 
         if user is None:
             return jsonify({'result' : 'fail' , 'msg' : 'student error'})
@@ -91,11 +105,25 @@ def register():
             db.users.insert_one(userinfo)
             return jsonify({'result' : "success"})
 
+@app.route('/register/check', methods=['GET'])
+def check_id():
+    user_id = request.form.get('userid')
+
+    checking = db.students.find_one({'user_id':user_id})
+    if checking is not None:
+        return jsonify({'result' : "fail", 'msg' : 'already'})
+
+
 
 # 로그인
 @app.route('/user/login', methods=['POST'])
 def login():
 
+<<<<<<< HEAD
+=======
+
+    user_id = request.form['user_id']
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     user_pwd = request.form['user_pwd']
     user_id = request.form['user_id']
 
@@ -137,33 +165,53 @@ def logout():
 # 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
 def get_known_article():
+<<<<<<< HEAD
 
+=======
+    if check() is True:
+        return redirect('/')
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     articles = list(db.articles.find({}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
 
 
 @app.route('/article/unknown', methods=['GET'])
 def get_unknown_article():
+<<<<<<< HEAD
 
     # if check(): return redirect('/')
+=======
+    if check() is True:
+        return redirect('/')
+
+>>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     articles = list(db.articles.find({}))
     return render_template('article_home.html', articles=articles)
 
 # 실명게시판 글쓰기버튼 작동
 @app.route('/article/known/write')
 def known_write_articles():
+    if check() is True:
+        return redirect('/')
+
     return render_template('modify.html', article_is_secret=False)
 
 
 # 익명게시판 글쓰기버튼
 @app.route('/article/unknown/write')
 def unknonw_write_articles():
+    if check() is True:
+        return redirect('/')
+
     return render_template('modify.html', article_is_secret=True)
 
 
 # 실명게시판 글쓰기 완료버튼 작동
 @app.route('/article/known/post', methods=['POST'])
 def known_post_articles():
+    if check() is True:
+        return redirect('/')
+
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
@@ -172,84 +220,104 @@ def known_post_articles():
     article_view = 0
     article_like = 0
     article_is_secret = False
-    article_user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
 
     db.articles.insert_one(
         {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
          'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
          'article_is_secret': article_is_secret,
-         'article_user_id': article_user_id})
+         'user_id': user_id})
 
     return redirect('/article/known')
 
 
 # 게시판(익명 + 실명) 상세페이지 (GET ? POST ?)
-@app.route('/article/<article_id>', methods=['GET'])
+@app.route('/article/<article_key>', methods=['GET'])
 @jwt_required
-def read_articles(article_id):
+def read_articles(article_key):
+    if check() is True:
+        return redirect('/')
+
     # 조회 후 조회수 1 증가, 증가된 후의 값 return
-    article = db.articles.find_one_and_update({'_id': ObjectId(article_id)},
+    article = db.articles.find_one_and_update({'_id': ObjectId(article_key)},
                                               {"$inc" : {"article_view" : 1}},return_document=True)
     user_id = get_jwt_identity()
+    comment = list(db.comments.find({'article_key' : ObjectId(article_key)}))
 
 
-    return render_template('read.html', article=article, user_id=user_id)
+    return render_template('article_detail.html', article=article, user_id=user_id, comment=comment)
 
 # 게시판 좋아요 기능 ## 주소
-@app.route('/article/<article_id>/like')
+@app.route('/article/<article_key>/like')
 @jwt_required
-def like_articles(article_id):
-    article = db.articles.find_one({'_id': ObjectId(article_id)})
+def like_articles(article_key):
+    if check() is True:
+        return redirect('/')
+
+    article = db.articles.find_one({'_id': ObjectId(article_key)})
     user_id = get_jwt_identity()
 
     like_info = {'user_id' : user_id,'article_key' : article['_id']}
     is_like = db.likes.find_one(like_info)
     if is_like is None:
         db.likes.insert_one(like_info)
-        db.articles.update_one({'_id' : ObjectId(article_id)},{'$inc' : {'article_like' : 1}})
+        db.articles.update_one({'_id' : ObjectId(article_key)},{'$inc' : {'article_like' : 1}})
         return jsonify({"result": "like"})
     else :
         db.likes.delete_one(like_info)
-        db.articles.update_one({'_id': ObjectId(article_id)}, {'$inc': {'article_like': -1}})
+        db.articles.update_one({'_id': ObjectId(article_key)}, {'$inc': {'article_like': -1}})
         return jsonify({"result" : "non-like"})
 
 
 # 수정 버튼을 누르면
-@app.route('/article/<article_id>/modify', methods=['PUT'])
+@app.route('/article/<article_key>/modify', methods=['PUT'])
 @jwt_required
-def modify_articles(article_id):
-    article = db.articles.find_one({'_id': ObjectId(article_id)})
+def modify_articles(article_key):
+    if check() is True:
+        return redirect('/')
+
+    article = db.articles.find_one({'_id': ObjectId(article_key)})
     return render_template('modify.html', article=article)
 
 
 # 수정완료 버튼을 누르면
-@app.route('/article/<article_id>/modify_pro')
+@app.route('/article/<article_key>/modify_pro')
 @jwt_required
-def modify_pro(article_id):
+def modify_pro(article_key):
+    if check() is True:
+        return redirect('/')
+
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
     article_modified_at = now.today()
     # 조회수, 좋아요는 수정하지 않는다.
 
-    db.articles.update_one({'_id': ObjectId(article_id)}, {'$set': {'article_title': article_title,
+    db.articles.update_one({'_id': ObjectId(article_key)}, {'$set': {'article_title': article_title,
                                                           'article_content': article_content,
                                                           'article_modified_at': article_modified_at}})
 
-    return redirect('/article/known')
+    # return redirect('/article/<article_key>')
+    return(redirect('/article/{}'.format(article_key)))
 
 
 # 삭제
-@app.route('/article/<article_id>/delete', methods=['DELETE'])
+@app.route('/article/<article_key>/delete', methods=['DELETE'])
 @jwt_required
-def delete_articles(article_id):
-    db.articles.delete_one({'_id': ObjectId(article_id)})
+def delete_articles(article_key):
+    if check() is True:
+        return redirect('/')
+
+    db.articles.delete_one({'_id': ObjectId(article_key)})
     return redirect('/article/known')
 
 
 # 익명게시판 글쓰기 완료시 작동
 @app.route('/article/unknown', methods=['POST'])
 def unknown_post_articles():
+    if check() is True:
+        return redirect('/')
+
     article_title = request.form['title_input']
     article_content = request.form['content_input']
     now = datetime.datetime.now()
@@ -258,19 +326,67 @@ def unknown_post_articles():
     article_view = 0
     article_like = 0
     article_is_secret = True
-    article_user_id = get_jwt_identity()
+    user_id = get_jwt_identity()
 
     db.articles.insert_one(
         {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
          'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
          'article_is_secret': article_is_secret,
-         'article_user_id': article_user_id})
+         'user_id': user_id})
 
     return redirect('/article/unknown')
 
 
-# 댓글
+# 댓글 완료 버튼
+@app.route('/article/<article_key>/comment', methods=["POST"])
+@jwt_required
+def post_comment(article_key):
+    if check() is True:
+        return redirect('/')
 
+    user_id = get_jwt_identity()
+    article_key = ObjectId(article_key)
+    comment_content = request.form['comment_content']
+    now = datetime.datetime.now()
+    comment_created_at = now.today()  # 시간
+    comment_modified_at = now.today()  # 시간
+
+    db.comments.insert_one({'article_key' : article_key, 'user_id' : user_id,
+                            'comment_content' : comment_content, 'comment_created_at' : comment_created_at,
+                            'comment_modified_at' : comment_modified_at})
+
+    return redirect('/article/{}'.format(article_key))
+
+# 댓글 수정버튼 누르면
+
+
+# 댓글 수정완료 버튼
+# 그 놈 클릭 시 어떻게 댓글 지칭?
+@app.route('/article/<comment_key>', methods=["PUT"])
+def modify_comment(comment_key):
+    if check() is True:
+        return redirect('/')
+
+    comment_content = request.form['comment_content']
+    comment = db.comments.find_one({'_id' : ObjectId(comment_key)})
+    db.comments.update_one({'_id' : ObjectId(comment_key)},
+                           {'$set' : {'comment_content' : comment_content}})
+    article_key = comment['article_key']
+    # return redirect("/article/{}".format(article_key))
+    return redirect(url_for("read_articles", article_key = article_key))
+
+    # return redirect('/article/{}'.format(article_key), comment = comment)
+
+# 댓글 삭제 버튼
+@app.route('/article/<comment_key>', methods=["DELETE"])
+def delete_comment(comment_key):
+    if check() is True:
+        return redirect('/')
+
+    comment = db.comments.find_one({'_id' : ObjectId(comment_key)})
+    article_key = comment['article_key']
+    db.comments.delete_one({'_id' : ObjectId(comment_key)})
+    return redirect('/article/{}'.format(article_key))
 
 if __name__ == '__main__':
     app.run('127.0.0.1', port=5000, debug=True)
