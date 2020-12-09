@@ -49,8 +49,6 @@ db = client.dbname
 
 
 
-<<<<<<< HEAD
-=======
 @jwt_optional
 def check():
     user_id = get_jwt_identity()
@@ -59,17 +57,12 @@ def check():
     # jungle_id = jungle_users[0]
     if ((user_id not in jungle_id) or (user_id is None)):
         return True
->>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
 
 @app.route('/')
 @jwt_optional
 def home():
     if get_jwt_identity():
         return redirect('/article/known')
-<<<<<<< HEAD
-
-=======
->>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     else:
         return render_template('login.html')
 
@@ -118,12 +111,6 @@ def check_id():
 # 로그인
 @app.route('/user/login', methods=['POST'])
 def login():
-
-<<<<<<< HEAD
-=======
-
-    user_id = request.form['user_id']
->>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     user_pwd = request.form['user_pwd']
     user_id = request.form['user_id']
 
@@ -165,26 +152,17 @@ def logout():
 # 목록페이지 보기
 @app.route('/article/known', methods=['GET'])
 def get_known_article():
-<<<<<<< HEAD
-
-=======
     if check() is True:
         return redirect('/')
->>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     articles = list(db.articles.find({}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
 
 
 @app.route('/article/unknown', methods=['GET'])
 def get_unknown_article():
-<<<<<<< HEAD
-
-    # if check(): return redirect('/')
-=======
     if check() is True:
         return redirect('/')
 
->>>>>>> e7b7e0320f428980e367f2d1fd98154a4d5a6d12
     articles = list(db.articles.find({}))
     return render_template('article_home.html', articles=articles)
 
