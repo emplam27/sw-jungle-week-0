@@ -38,7 +38,6 @@ db = client.w0projectdb
 def check():
     user_id = get_jwt_identity()
     jungle_id = list(map(lambda x: x['user_id'], db.users.find({})))
-    print(jungle_id)
     # jungle_id = jungle_users[0]
     if ((user_id not in jungle_id) or (user_id is None)):
         return True
@@ -97,10 +96,8 @@ def check_id():
 @app.route('/user/login', methods=['POST'])
 def login():
 
-
     user_id = request.form['user_id']
     user_pwd = request.form['user_pwd']
-
 
     ## *** find_one 시에 아무것도 없을 때의 데이터 형태 알아야함 ***
     user = db.users.find_one({'user_id': user_id}, {'user_pwd': user_pwd})
@@ -115,10 +112,6 @@ def login():
     # 서버에 저장
     set_access_cookies(resp, access_token)
     set_refresh_cookies(resp, refresh_token)
-
-    print(access_token)
-    print(refresh_token)
-
     return resp
 
 
@@ -131,6 +124,7 @@ def get_known_article():
         return redirect('/')
     articles = list(db.articles.find({'article_is_secret': False}).sort('article_created_at', -1))
     return render_template('article_home.html', articles=articles)
+
 
 # (완료)
 # 익명 게시판 목록페이지 보기
@@ -152,23 +146,27 @@ def known_post_articles():
     if check() is True:
         return redirect('/')
 
-    article_title = request.form['title_input']
-    article_content = request.form['content_input']
-    now = datetime.datetime.now()
-    article_created_at = now.today()  # 시간
-    article_modified_at = now.today()  # 시간
-    article_view = 0
-    article_like = 0
-    article_is_secret = False
-    article_user_id = get_jwt_identity()
+    if request.method == 'GET':
+        return render_template('article_form.html', article_is_secret=False)
+    
+    else:
+        article_title = request.form['article_title']
+        article_content = request.form['article_content']
+        now = datetime.datetime.now()
+        article_created_at = now.today()  # 시간
+        article_modified_at = now.today()  # 시간
+        article_view = 0
+        article_like = 0
+        article_is_secret = False
+        article_user_id = get_jwt_identity()
 
-    db.articles.insert_one(
-        {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
-         'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
-         'article_is_secret': article_is_secret,
-         'article_user_id': article_user_id})
+        db.articles.insert_one(
+            {'article_title': article_title, 'article_content': article_content, 'article_created_at': article_created_at,
+            'article_modified_at': article_modified_at, 'article_view': article_view, 'article_like': article_like,
+            'article_is_secret': article_is_secret,
+            'user_id': article_user_id})
 
-    return redirect('/article/known')
+        return redirect('/article/known')
 
 
 # (완료)
@@ -215,7 +213,7 @@ def article_detail(article_id):
     comments = db.comments.find({'article_key': ObjectId(article_id)})
     is_like = db.likes.find_one({'user_id' : user_id,'article_key' : article['_id']})
     # 조회 후 조회수 1 증가, 증가된 후의 값 return
-    article = db.articles.find_one_and_update({'_id': article_key},
+    article = db.articles.find_one_and_update({'_id': ObjectId(article_id)},
                                               {"$inc" : {"article_view" : 1}},return_document=True)
     return render_template('article_detail.html', article=article, user_id=user_id, comments=comments, is_like=is_like)
 
@@ -230,10 +228,12 @@ def modify_pro(article_id):
 
     article = db.articles.find_one({'_id': ObjectId(article_id)})
     user_id = get_jwt_identity()
-    if article.user_id != user_id:
+    if article['user_id'] != user_id:
         return redirect('/article/{}'.format(article_id))
+
     if request.method == 'GET':
         return render_template('article_form.html', article=article)
+
     else:
         article_title = request.form['article_title']
         article_content = request.form['article_content']
@@ -254,7 +254,7 @@ def delete_articles(article_id):
 
     article = db.articles.find_one({'_id': ObjectId(article_id)})
     user_id = get_jwt_identity()
-    if article.user_id != user_id:
+    if article['user_id'] != user_id:
         return redirect('/article/{}'.format(article_id))
     db.articles.delete_one({'_id': ObjectId(article_id)})
     return redirect('/article/known')
