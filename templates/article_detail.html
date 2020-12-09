@@ -17,13 +17,24 @@
   <hr>
   <p>{{ article.article_content }}</p>
   
-  <div id="like-button">
-    <button class="button is-danger is-outlined is-medium">
+  <div class="mt-5">
+    {% if is_like %}
+      <p id="is-like" style="display: none;">true</p>
+      <button id="like-button" class="button is-danger is-medium">
+        <div class="p-3">
+          <i class="fas fa-heart fa-lg mr-3"></i>
+          <span id="like-count">{{ article.article_like }}</span>
+        </div>
+      </button>
+    {% else %}
+    <p id="is-like" style="display: none;">false</p>
+    <button id="like-button" class="button is-danger is-outlined is-medium">
       <div class="p-3">
         <i class="far fa-heart fa-lg mr-3"></i>
-        {{ article.article_like }}
+        <span id="like-count">{{ article.article_like }}</span>
       </div>
-    </button>    
+    </button>
+    {% endif %}
   </div>
 
   {% if user_id == article.user_id %}
@@ -72,6 +83,24 @@
 {% block script %}
 <script>
   const likeButton = document.getElementById('like-button')
+  const likeCount = parseInt(document.getElementById('like-count').innerText)
+  const isLike = document.getElementById('is-like').innerText
+  console.log(likeCount, isLike)
+  likeButton.addEventListener("click", null)
+
+  function changeLike() {
+    
+    if (isLike === 'false') {
+      likeCount += 1
+      likeButton.classList.toggle(is-outlined)
+      likeButton.style.color = 'white'
+    } else {
+      likeCount -= 1
+      likeButton.classList.toggle(is-outlined)
+      likeButton.style.color = ''
+    }
+
+  }
   
 </script>
 {% endblock %}
