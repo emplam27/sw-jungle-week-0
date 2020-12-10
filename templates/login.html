@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>서비스 이름</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.css') }}" />
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
     <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
   </head>
   <body>
@@ -16,8 +17,13 @@
           <img src="{{ url_for('static', filename='img/big-icon.png') }}" alt="jungle icon" />
         </div>
 
+        {% if result %}
+          <p id="login-result" style="display: none;">{{ result }}</p>
+          <p id="login-msg" style="display: none;">{{ msg }}</p>
+        {% endif %}
+
         <div class="login-form-container column">
-          <form id="register-form" action="/user/login" method="POST">
+          <form id="login-form" name="loginForm" action="/login" method="POST">
             <div class="field">
               <label class="label">아이디</label>
               <div class="control">
@@ -44,7 +50,16 @@
   </body>
 </html>
 
-<script></script>
+<script>
+  const loginResult = document.getElementById('login-result').innerText
+  const loginMsg = document.getElementById('login-msg').innerText
+  if (loginResult) {
+    if (loginMsg === '로그인 되었습니다.') {
+      window.location.href = '/article/known'
+    }
+    alert(loginMsg)
+  }
+</script>
 
 <style>
   .section {

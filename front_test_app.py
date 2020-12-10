@@ -5,6 +5,7 @@ from flask_wtf.csrf import CSRFProtect
 from pymongo import MongoClient
 import datetime
 from bson.objectid import ObjectId
+import json
 
 app = Flask(__name__)
 
@@ -69,21 +70,37 @@ def register():
         userid = request.form.get('userid')
         password = request.form.get('password')
         re_password = request.form.get('re_password')
+        formdata = {
+            'username': username,
+            'email': email,
+            'ordinal': ordinal,
+            'userid': userid,
+        }
 
+        # 회원가입 실패
+        if not username:
+            return render_template('register.html', result=True, msg='이름을 입력해주세요.', formdata=formdata)
+        if not email:
+            return render_template('register.html', result=True, msg='슬랙에 가입한 이메일을 입력해주세요.', formdata=formdata)
+        if not userid:
+            return render_template('register.html', result=True, msg='아이디를 입력해주세요.', formdata=formdata)
+        if not password:
+            return render_template('register.html', result=True, msg='비밀번호를 입력해주세요.', formdata=formdata)
+        if not re_password:
+            return render_template('register.html', result=True, msg='비밀번호 확인을 입력해주세요.', formdata=formdata)
+        
+        # 회원가입 성공
         user = db.students.find_one({'stu_name': username, 'stu_email' : email})
-
         if user is None:
-            return jsonify({'result' : 'fail' , 'msg' : 'student error'})
-        elif not (userid and username and password and re_password):
-            print(userid, username, password, re_password)
-            return jsonify({'result' : 'fail' , 'msg' : 'fill error'})
+            return render_template('register.html', result=True, msg='정글 교육생이 아닙니다. 확인해주세요.', formdata=formdata)
         elif password != re_password:
-            return jsonify({'result' : 'fail','msg' : "pw error"})
+            return render_template('register.html', result=True, msg='비밀번호 확인이 일치하지 않습니다. 확인해주세요.', formdata=formdata)
         else:  # 모두 입력이 정상적으로 되었다면 밑에명령실행(DB에 입력됨)
             userinfo = {'user_id': userid, 'user_name': username, 'user_pwd': password, 'user_email': email,
                         'ordinal': ordinal}
             db.users.insert_one(userinfo)
-            return jsonify({'result' : "success"})
+            return render_template('register.html', result=True, msg='회원가입 되었습니다.')
+
 
 @app.route('/register/check', methods=['GET'])
 def check_id():
@@ -95,26 +112,32 @@ def check_id():
 
 
 # 로그인
-@app.route('/user/login', methods=['POST'])
+@app.route('/login', methods=['GET','POST'])
 def login():
 
-    user_id = request.form['user_id']
-    user_pwd = request.form['user_pwd']
+    if request.method == 'GET':
+        return render_template('login.html')
 
-    ## *** find_one 시에 아무것도 없을 때의 데이터 형태 알아야함 ***
-    user = db.users.find_one({'user_id': user_id}, {'user_pwd': user_pwd})
-    if user is None:
-        return jsonify({'login': False})
+    else:
+        user_id = request.form['user_id']
+        user_pwd = request.form['user_pwd']
+        # 로그인 실패
+        if not user_id:
+            return render_template('login.html', result=True, msg='아이디를 입력해주세요.')
+        if not user_pwd:
+            return render_template('login.html', result=True, msg='비밀번호를 입력해주세요.')
+        user = db.users.find_one({'user_id': user_id}, {'user_pwd': user_pwd})
+        if user is None:
+            return render_template('login.html', result=True, msg='회원정보가 존재하지 않습니다. 다시 확인해주세요.')
 
-    access_token = create_access_token(identity=user_id, expires_delta=False)
-    refresh_token = create_refresh_token(identity=user_id)
+        # 로그인 성공
+        access_token = create_access_token(identity=user_id, expires_delta=False)
+        refresh_token = create_refresh_token(identity=user_id)
+        resp = make_response(render_template('login.html', result=True, msg='로그인 되었습니다.'))
 
-    resp = make_response(redirect('/article/known'))
-
-    # 서버에 저장
-    set_access_cookies(resp, access_token)
-    set_refresh_cookies(resp, refresh_token)
-    return resp
+        set_access_cookies(resp, access_token)
+        set_refresh_cookies(resp, refresh_token)
+        return resp
 
 
 # 로그아웃
