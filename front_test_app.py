@@ -182,11 +182,13 @@ def known_post_articles():
         return render_template('article_form.html', article_is_secret=False)
     
     else:
+        now = datetime.datetime.now()
+        now_text = now.strftime("%Y-%m-%d %H:%M:%S")
         article_title = request.form['article_title']
         article_content = request.form['article_content']
         now = datetime.datetime.now()
-        article_created_at = now.today()  # 시간
-        article_modified_at = now.today()  # 시간
+        article_created_at = now_text  # 시간
+        article_modified_at = now_text  # 시간
         article_view = 0
         article_like = 0
         article_is_secret = False
@@ -211,12 +213,14 @@ def unknonw_write_articles():
     if request.method == 'GET':
         return render_template('article_form.html', article_is_secret=True)
 
-    else: 
+    else:
+        now = datetime.datetime.now()
+        now_text = now.strftime("%Y-%m-%d %H:%M:%S")
         article_title = request.form['article_title']
         article_content = request.form['article_content']
         now = datetime.datetime.now()
-        article_created_at = now.today()  # 시간
-        article_modified_at = now.today()  # 시간
+        article_created_at = now_text  # 시간
+        article_modified_at = now_text  # 시간
         article_view = 0
         article_like = 0
         article_is_secret = True
@@ -265,10 +269,11 @@ def modify_pro(article_id):
         return render_template('article_form.html', article=article, article_is_secret=article_is_secret)
 
     else:
+        now = datetime.datetime.now()
+        now_text = now.strftime("%Y-%m-%d %H:%M:%S")
         article_title = request.form['article_title']
         article_content = request.form['article_content']
-        now = datetime.datetime.now()
-        article_modified_at = now.today()
+        article_modified_at = now_text
         db.articles.update_one({'_id': ObjectId(article_id)}, {'$set': {'article_title': article_title,
                                                             'article_content': article_content,
                                                             'article_modified_at': article_modified_at}})
@@ -318,12 +323,13 @@ def post_comment(article_key):
     if check() is True:
         return redirect('/')
 
+    now = datetime.datetime.now()
+    now_text = now.strftime("%Y-%m-%d %H:%M:%S")
     user_id = get_jwt_identity()
     article_key = ObjectId(article_key)
     comment_content = request.form['comment_content']
-    now = datetime.datetime.now()
-    comment_created_at = now.today()  # 시간
-    comment_modified_at = now.today()  # 시간
+    comment_created_at = now_text  # 시간
+    comment_modified_at = now_text  # 시간
 
     db.comments.insert_one({'article_key' : article_key, 'user_id' : user_id,
                             'comment_content' : comment_content, 'comment_created_at' : comment_created_at,
