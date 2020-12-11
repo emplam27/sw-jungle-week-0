@@ -1,0 +1,172 @@
+{% extends "navbar.html" %}
+
+{% block head %}
+<link rel="stylesheet" href="{{ url_for('static', filename='css/detail.css') }}" />
+{% endblock %}
+
+
+{% block content %}
+  <div class="article-title-box pt-5">
+    <div>
+      <p id="article-id" style="display: none;">{{ article._id }}</p>
+      <p class="title">
+        {{ article.article_title }}
+      </p>
+      {% if not article.article_is_secret %}
+        <span class="subtitle mr-3"><strong>{{ article.user_id }}</strong></span>
+      {% else %}
+        <span class="subtitle mr-3"><strong>익명</strong></span>
+      {% endif %}
+      <span class="subtitle mr-3">|</span>
+      <span class="subtitle mr-3">작성시간: {{ article.article_created_at }}</span>
+      <span class="subtitle mr-3">|</span>
+      <span class="subtitle mr-3">수정시간: {{ article.article_created_at }}</span>
+      <span class="subtitle mr-3">|</span>
+      <span class="subtitle mr-1"><i class="fas fa-eye"></i></span>
+      <span class="subtitle">{{ article.article_view }}</span>
+    </div>
+    {% if user_id == article.user_id %}
+      <div>
+        <form action="/article/{{ article._id }}/modify" method="GET">
+          <button class="button is-success is-light" type="submit">게시글 수정</button>
+        </form>
+        <form action="/article/{{ article._id }}/delete" method="POST">
+          <button class="button is-danger is-light" type="submit">게시글 삭제</button>
+        </form>
+      </div>
+    {% endif %}
+  </div>
+  <hr>
+  <p class="article-content">{{ article.article_content }}</p>
+  <br/>
+  
+  <div class="mt-5 like-button-box">
+    {% if is_like %}
+      <p id="is-like" style="display: none;">true</p>
+      <div class="pt-5">
+        <div id="like-button" class="like-button-full p-4">
+          <span id="heart-icon" class="mr-3 ml-4"><i class="far fa-heart fa-lg mr-3"></i></span>
+          <span id="like-count" class="mr-4">{{ article.article_like }}</span>
+        </div>
+      </div>
+    {% else %}
+      <p id="is-like" style="display: none;">false</p>
+      <div class="pt-5">
+        <div id="like-button" class="like-button-outlined p-4">
+          <span id="heart-icon" class="mr-3 ml-4"><i class="far fa-heart fa-lg mr-3"></i></span>
+          <span id="like-count" class="mr-4">{{ article.article_like }}</span>
+        </div>
+      </div>
+    {% endif %}
+  </div>
+
+  <div>
+    <form class="comment-form mt-6" action="/article/{{ article._id }}/comment" method="POST">
+      <div class="comment-textarea">
+        <textarea class="textarea" name="comment_content" placeholder="댓글을 작성해주세요." rows="2"></textarea>
+      </div>
+      <button class="button green-button comment-button">댓글달기</button>
+    </form>
+    <hr>
+
+    {% if not article.article_is_secret %}
+      {% for comment in comments %}
+        <div id="comment-{{ comment._id }}" class="comment-list">
+          <div>
+            <span class="comment-user mr-2">{{ comment.user_id }}</span>
+            <span class="comment-time"> | </span>
+            <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
+            <div class="comment-content pt-2">{{ comment.comment_content }}</div>
+          </div>
+          {% if user_id == comment.user_id %}
+            <div>
+              <button class="button is-success is-light" onclick="changeCommentForm(`{{ comment._id }}`, `{{ comment.user_id }}`, `{{ comment.article_key }}`, `{{ comment.comment_content }}`, `{{ comment.comment_modified_at }}`)">댓글 수정</button>
+              <form action="/comment/{{ comment._id }}/delete" method="POST">
+                <button class="button is-danger is-light">댓글 삭제</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+        <hr>
+      {% endfor %}
+    {% else %}
+      {% for comment in comments %}
+        <div id="comment-{{ comment._id }}" class="comment-list">
+          <div>
+            <span class="comment-user mr-2">익명</span>
+            <span class="comment-time"> | </span>
+            <span class="comment-time ml-2">{{ comment.comment_modified_at }}</span>
+            <div class="comment-content pt-2">{{ comment.comment_content }}</div>
+          </div>
+          {% if user_id == comment.user_id %}
+            <div>
+              <button class="button is-success is-light" onclick="changeCommentForm(`{{ comment._id }}`, `{{ comment.user_id }}`, `{{ comment.article_key }}`, `{{ comment.comment_content }}`, `{{ comment.comment_modified_at }}`)">댓글 수정</button>
+              <form action="/comment/{{ comment._id }}/delete" method="POST">
+                <button class="button is-danger is-light">댓글 삭제</button>
+              </form>
+            </div>
+          {% endif %}
+        </div>
+        <hr>
+      {% endfor %}
+    {% endif %}
+  </div>
+{% endblock %}
+
+
+{% block script %}
+<script>
+  let likeButton = document.getElementById('like-button')
+  let likeCount = document.getElementById('like-count')
+  let likeCountNumber = parseInt(likeCount.innerText)
+  let heartIcon = document.getElementById('heart-icon')
+  let isLike = document.getElementById('is-like').innerText
+  let articleId = document.getElementById('article-id').innerText
+  likeButton.addEventListener("click", changeLike)
+
+  function changeLike() {
+    console.log(articleId)
+    $.ajax({
+      type: "GET",
+      url: "/article/" + articleId + "/like",
+    })
+
+    if (isLike === 'false') {
+      isLike = 'true'
+      likeCountNumber += 1
+      likeCount.innerText = likeCountNumber
+      likeButton.className = 'like-button-full p-4'
+    } else {
+      isLike = 'false'
+      likeCountNumber -= 1
+      likeCount.innerText = likeCountNumber
+      likeButton.className = 'like-button-outlined p-4'
+    }
+  }
+
+  function changeCommentForm(commentId, UserId, ArticleKey, commentContent, commentModifiedAt) {
+    console.log(commentId, UserId, ArticleKey, commentContent)
+    console.log(`comment-${UserId}`)
+    const commentElement = document.getElementById(`comment-${commentId}`)
+    console.log(commentElement)
+    commentElement.innerHTML = `
+      <div class="comment-modify">
+        <span class="comment-user mr-2">${UserId}</span>
+        <span class="comment-time"> | </span>
+        <span class="comment-time ml-2">${commentModifiedAt}</span>
+        <div class="comment-modify-form mt-3">
+          <form class="comment-modify-form" action="/comment/${commentId}/modify" method="POST">
+            <div class="comment-modify-textarea">
+              <textarea class="textarea" name="comment_content" rows="2">${commentContent}</textarea>
+            </div>
+            <button class="button is-success is-light comment-button">댓글수정</button>
+          </form>
+          <form class="comment-modify-button" action="/article/{{ article._id }}" method="GET">
+            <button class="button is-warning is-light comment-button">취소</button>
+          </form>
+        </div>
+      </div>
+    `
+  }
+</script>
+{% endblock %}

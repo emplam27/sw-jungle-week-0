@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>서비스 이름</title>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js"></script>
+    <script defer src="https://use.fontawesome.com/releases/v5.14.0/js/all.js"></script>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bulma.css') }}" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}" />
+    {% block head %}
+    {% endblock %}
+  </head>
+  <body>
+    <nav class="navbar" role="navigation" aria-label="main navigation">
+      <div class="container">
+        <div class="navbar-brand">
+        </div>
+        
+        <div id="navbarBasicExample" class="navbar-menu">
+          <div class="navbar-start">
+            <a class="navbar-item" href="/article/known">
+              <img class="logo-image" src="{{ url_for('static', filename='img/big-icon.png') }}" alt="jungle icon" />
+              <p class="logo-text pl-4">정글짐</p>
+            </a>
+            <a class="navbar-item ml-5"> 공지사항 </a>
+            <a class="navbar-item ml-5" href="/article/known"> 자유게시판 </a>
+            <a class="navbar-item ml-5" href="/article/unknown"> 익명게시판 </a>
+          </div>
+          <div class="navbar-end">
+            <div class="navbar-item">
+              <div class="buttons">
+                <form action = "/token/remove" class="is-primary" method = "POST">
+                  <button class="button green-button is-medium comment-button">
+                    <strong>로그아웃</strong>
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </nav>
+    <img class="background-image" src="{{ url_for('static', filename='img/jungle_gym.svg') }}" alt="background-image">
+    <section class="section">
+      <div class="container">
+        {% block content %}
+        {% endblock %}
+      </div>
+    </section>
+  </body>
+</html>
+
+{% block script %}
+{% endblock %}
